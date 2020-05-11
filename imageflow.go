@@ -1,0 +1,47 @@
+package imageflow
+
+/*
+#cgo CFLAGS: -I ./DyLib
+#cgo LDFLAGS: -L./Dylib -limageflow
+#include "imageflow.h"
+*/
+import "C"
+import (
+	"unsafe"
+)
+
+// Job to perform a task in imageflow
+type Job struct {
+	inner *C.struct_imageflow_context
+}
+
+// AddInput add input to context
+func (job *Job) AddInput(id int, byt []byte) {
+	C.imageflow_context_add_input_buffer(job.inner, C.int(id), (*C.uchar)(C.CBytes(byt)), C.ulong(len(byt)), C.imageflow_lifetime_lifetime_outlives_function_call)
+}
+
+// AddOutput add output to context
+func (job *Job) AddOutput(id int) {
+	C.imageflow_context_add_output_buffer(job.inner, C.int(id))
+
+}
+
+// Message execute a command
+func (job *Job) Message(message []byte) {
+	C.imageflow_context_send_json(job.inner, C.CString("v1/execute"), (*C.uchar)(C.CBytes(message)), C.ulong(len(message)))
+}
+
+// New Create a context
+func New() Job {
+	v := C.imageflow_context_create(3, 0)
+	return Job{inner: v}
+}
+
+// GetOutput from the context
+func (job *Job) GetOutput(id int) []byte {
+	ptr := (*C.uchar)(C.malloc(C.size_t(unsafe.Sizeof(uintptr(0)))))
+	length := 0
+	lengthPtr := (*C.ulong)(unsafe.Pointer(&length))
+	C.imageflow_context_get_output_buffer_by_id(job.inner, C.int(id), (&ptr), lengthPtr)
+	return C.GoBytes((unsafe.Pointer)(ptr), C.int(length))
+}
