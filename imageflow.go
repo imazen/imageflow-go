@@ -1,8 +1,7 @@
 package imageflow
 
 /*
-#cgo CFLAGS: -I ./DyLib
-#cgo LDFLAGS: -L./Dylib -limageflow
+#cgo LDFLAGS: -limageflow
 #include "imageflow.h"
 */
 import "C"
@@ -40,8 +39,8 @@ func New() Job {
 // GetOutput from the context
 func (job *Job) GetOutput(id int) []byte {
 	ptr := (*C.uchar)(C.malloc(C.size_t(unsafe.Sizeof(uintptr(0)))))
-	length := 0
-	lengthPtr := (*C.ulong)(unsafe.Pointer(&length))
-	C.imageflow_context_get_output_buffer_by_id(job.inner, C.int(id), (&ptr), lengthPtr)
-	return C.GoBytes((unsafe.Pointer)(ptr), C.int(length))
+	l := 0
+	le := (*C.ulong)(unsafe.Pointer(&l))
+	C.imageflow_context_get_output_buffer_by_id(job.inner, C.int(id), (&ptr), le)
+	return C.GoBytes((unsafe.Pointer)(ptr), C.int(l))
 }
