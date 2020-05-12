@@ -1,46 +1,35 @@
 package imageflow
 
-/*
-#cgo LDFLAGS: -limageflow
-#include "imageflow.h"
-*/
-import "C"
-import (
-	"unsafe"
-)
-
-// Job to perform a task in imageflow
-type Job struct {
-	inner *C.struct_imageflow_context
+// Steps is the builder for creating a operation
+type Steps struct {
+	vertex     []Step
+	last       int
+	innerGraph graph
 }
 
-// AddInput add input to context
-func (job *Job) AddInput(id int, byt []byte) {
-	C.imageflow_context_add_input_buffer(job.inner, C.int(id), (*C.uchar)(C.CBytes(byt)), C.ulong(len(byt)), C.imageflow_lifetime_lifetime_outlives_function_call)
+// Decode is used to import a image
+func (steps *Steps) Decode() {
+	steps.innerGraph.AddVertex()
+	steps.vertex = append(steps.vertex)
 }
 
-// AddOutput add output to context
-func (job *Job) AddOutput(id int) {
-	C.imageflow_context_add_output_buffer(job.inner, C.int(id))
-
+// Step specify different nodes
+type Step interface {
+	ToStep() interface{}
 }
 
-// Message execute a command
-func (job *Job) Message(message []byte) {
-	C.imageflow_context_send_json(job.inner, C.CString("v1/execute"), (*C.uchar)(C.CBytes(message)), C.ulong(len(message)))
+type edge struct {
+	kind string
+	to   int
+}
+type graph struct {
+	inner [][]edge
 }
 
-// New Create a context
-func New() Job {
-	v := C.imageflow_context_create(3, 0)
-	return Job{inner: v}
+func (gr *graph) AddVertex() {
+	gr.inner = append(gr.inner, []edge{})
 }
 
-// GetOutput from the context
-func (job *Job) GetOutput(id int) []byte {
-	ptr := (*C.uchar)(C.malloc(C.size_t(unsafe.Sizeof(uintptr(0)))))
-	l := 0
-	le := (*C.ulong)(unsafe.Pointer(&l))
-	C.imageflow_context_get_output_buffer_by_id(job.inner, C.int(id), (&ptr), le)
-	return C.GoBytes((unsafe.Pointer)(ptr), C.int(l))
+func (gr *graph) AddEdge(to int, from int, kind string) {
+	gr.inner[from] = append(gr.inner[from], edge{to: to, kind: kind})
 }
