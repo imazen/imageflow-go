@@ -46,3 +46,14 @@ vect
 webplossless
 webplossy
 yarnrc
+byt
+CBytes
+cgo
+ioutil
+limageflow
+mozjpg
+speficy
+uintptr
+upsampling
+
+

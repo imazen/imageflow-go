@@ -98,7 +98,7 @@ func (preset WebPLossless) ToPreset() string {
 	return "webplossless"
 }
 
-// Constrain is used to speficy constraints for the image
+// Constrain is used to specify constraints for the image
 // W The width constraint in pixels
 // H The height constraint in pixels
 // Mode A constraint mode
@@ -132,7 +132,7 @@ type Color interface {
 	ToColor() interface{}
 }
 
-// Black is the implemention of interface Color and used as color black
+// Black is the Implementation of interface Color and used as color black
 type Black string
 
 // ToColor is used to convert to black color
@@ -140,10 +140,10 @@ func (black *Black) ToColor() string {
 	return "Black"
 }
 
-// Transparent is the implemention of interface Color and used as color transparent
+// Transparent is the Implementation of interface Color and used as color transparent
 type Transparent string
 
-// ToColor is ued to convert Transparen to Color
+// ToColor is used to convert Transparent to Color
 func (color Transparent) ToColor() string {
 	return "transparent"
 }
