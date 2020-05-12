@@ -14,3 +14,17 @@ func TestJob(t *testing.T) {
 	job.Message(command)
 	ioutil.WriteFile("./output.jpg", job.GetOutput(1), 0644)
 }
+
+func TestStep(t *testing.T) {
+	step := Steps{
+		vertex: []Step{},
+		last:   0,
+		ioID:   0,
+		innerGraph: graph{
+			edges: []edge{},
+		},
+	}
+	step.Decode().ConstrainWithin(10, 10).Branch(func(step *Steps) {
+		step.Decode().ConstrainWithin(10, 10).Encode(MozJPG{})
+	}).Encode(MozJPG{}).Execute()
+}

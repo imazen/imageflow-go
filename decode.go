@@ -6,7 +6,7 @@ type Decode struct {
 }
 
 // ToStep is used to convert a Decode to step
-func (decode *Decode) ToStep() map[string]interface{} {
+func (decode Decode) ToStep() interface{} {
 	decodeMap := make(map[string]interface{})
 	decodeMap["decode"] = decode
 	return decodeMap
@@ -24,7 +24,7 @@ type Encode struct {
 }
 
 // ToStep is used to convert a Encode to step
-func (encode *Encode) ToStep() map[string]interface{} {
+func (encode Encode) ToStep() interface{} {
 	encodeMap := make(map[string]interface{})
 	encodeMap["encode"] = encode
 	return encodeMap
@@ -247,4 +247,28 @@ func (region CropWhitespace) ToStep() interface{} {
 	stepMap := make(map[string]Step)
 	stepMap["crop_whitespace"] = region
 	return stepMap
+}
+
+// Rotate90 rotate the image by 90 degree
+type Rotate90 string
+
+// ToStep is used to convert the rotate to step
+func (rotate Rotate90) ToStep() string {
+	return "rotate_90"
+}
+
+// Rotate180 rotate the image by 90 degree
+type Rotate180 string
+
+// ToStep is used to convert the rotate to step
+func (rotate Rotate180) ToStep() string {
+	return "rotate_180"
+}
+
+// Rotate270 rotate the image by 90 degree
+type Rotate270 string
+
+// ToStep is used to convert the rotate to step
+func (rotate Rotate270) ToStep() string {
+	return "rotate_90"
 }
