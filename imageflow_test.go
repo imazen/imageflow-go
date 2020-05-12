@@ -24,7 +24,7 @@ func TestStep(t *testing.T) {
 			edges: []edge{},
 		},
 	}
-	step.Decode().ConstrainWithin(10, 10).Branch(func(step *Steps) {
-		step.Decode().ConstrainWithin(10, 10).Encode(MozJPG{})
-	}).Encode(MozJPG{}).Execute()
+	step.Decode(&File{}).ConstrainWithin(10, 10).Branch(func(step *Steps) {
+		step.Decode(&File{}).ConstrainWithin(10, 10).Encode(&File{}, MozJPEG{})
+	}).Encode(&File{}, MozJPEG{}).Execute()
 }

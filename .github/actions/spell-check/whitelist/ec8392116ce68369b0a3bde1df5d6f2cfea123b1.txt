@@ -51,8 +51,6 @@ CBytes
 cgo
 ioutil
 limageflow
-mozjpg
-speficy
 uintptr
 upsampling
 

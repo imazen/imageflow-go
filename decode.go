@@ -30,14 +30,14 @@ func (encode Encode) ToStep() interface{} {
 	return encodeMap
 }
 
-// MozJPG is used to encode using mozjpg library
-type MozJPG struct {
+// MozJPEG is used to encode using mozjpeg library
+type MozJPEG struct {
 	Quality     string `json:"quality"`
 	Progressive bool   `json:"progressive"`
 }
 
 // ToPreset is used to convert the MozJPG to a preset
-func (preset MozJPG) ToPreset() interface{} {
+func (preset MozJPEG) ToPreset() interface{} {
 	presetMap := make(map[string]Preset)
 	presetMap["mozjpeg"] = preset
 	return presetMap
@@ -179,7 +179,7 @@ func (color Transparent) ToColor() string {
 // n_cubic
 // n_cubic_sharp
 type ConstraintHint struct {
-	SharpenPercent    string      `json:"sharpen_percent"`
+	SharpenPercent    float64     `json:"sharpen_percent"`
 	DownFilter        string      `json:"down_filter"`
 	UpFilter          string      `json:"up_filter"`
 	ScalingColorspace string      `json:"scaling_colorspace"`
@@ -190,9 +190,15 @@ type ConstraintHint struct {
 
 // ToStep Converts the Constraint to a step
 func (step Constrain) ToStep() interface{} {
-	step.Hint.BackgroundColor = step.Hint.BackgroundColor.(Color).ToColor()
-	step.Gravity = step.Gravity.(ConstraintGravity).ToGravity()
-	step.CanvasColor = step.CanvasColor.(Color).ToColor()
+	if step.Hint.BackgroundColor != nil {
+		step.Hint.BackgroundColor = step.Hint.BackgroundColor.(Color).ToColor()
+	}
+	if step.Gravity != nil {
+		step.Gravity = step.Gravity.(ConstraintGravity).ToGravity()
+	}
+	if step.CanvasColor != nil {
+		step.CanvasColor = step.CanvasColor.(Color).ToColor()
+	}
 	stepMap := make(map[string]Step)
 	stepMap["constrain"] = step
 	return stepMap
