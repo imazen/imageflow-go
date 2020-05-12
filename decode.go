@@ -230,7 +230,7 @@ type RegionPercentage struct {
 func (region RegionPercentage) ToStep() interface{} {
 	region.BackgroundColor = region.BackgroundColor.(Color).ToColor()
 	stepMap := make(map[string]Step)
-	stepMap["region_precentage"] = region
+	stepMap["region_percentage"] = region
 	return stepMap
 }
 
