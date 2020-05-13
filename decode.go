@@ -6,7 +6,7 @@ type Decode struct {
 }
 
 // ToStep is used to convert a Decode to step
-func (decode Decode) ToStep() interface{} {
+func (decode Decode) ToStep() map[string]interface{} {
 	decodeMap := make(map[string]interface{})
 	decodeMap["decode"] = decode
 	return decodeMap
@@ -32,13 +32,16 @@ func (encode Encode) ToStep() interface{} {
 
 // MozJPEG is used to encode using mozjpeg library
 type MozJPEG struct {
-	Quality     string `json:"quality"`
-	Progressive bool   `json:"progressive"`
+	Quality     uint `json:"quality"`
+	Progressive bool `json:"progressive"`
 }
 
 // ToPreset is used to convert the MozJPG to a preset
 func (preset MozJPEG) ToPreset() interface{} {
 	presetMap := make(map[string]Preset)
+	if preset.Quality == 0 {
+		preset.Quality = 100
+	}
 	presetMap["mozjpeg"] = preset
 	return presetMap
 }
@@ -137,7 +140,7 @@ type Black string
 
 // ToColor is used to convert to black color
 func (black *Black) ToColor() string {
-	return "Black"
+	return "black"
 }
 
 // Transparent is the Implementation of interface Color and used as color transparent
@@ -179,13 +182,13 @@ func (color Transparent) ToColor() string {
 // n_cubic
 // n_cubic_sharp
 type ConstraintHint struct {
-	SharpenPercent    float64     `json:"sharpen_percent"`
-	DownFilter        string      `json:"down_filter"`
-	UpFilter          string      `json:"up_filter"`
-	ScalingColorspace string      `json:"scaling_colorspace"`
+	SharpenPercent    interface{} `json:"sharpen_percent"`
+	DownFilter        interface{} `json:"down_filter"`
+	UpFilter          interface{} `json:"up_filter"`
+	ScalingColorspace interface{} `json:"scaling_colorspace"`
 	BackgroundColor   interface{} `json:"background_color"`
-	ResampleWhen      string      `json:"resample_when"`
-	SharpenWhen       string      `json:"sharpen_when"`
+	ResampleWhen      interface{} `json:"resample_when"`
+	SharpenWhen       interface{} `json:"sharpen_when"`
 }
 
 // ToStep Converts the Constraint to a step

@@ -15,12 +15,12 @@ type Job struct {
 }
 
 // AddInput add input to context
-func (job *Job) AddInput(id int, byt []byte) {
+func (job *Job) AddInput(id uint, byt []byte) {
 	C.imageflow_context_add_input_buffer(job.inner, C.int(id), (*C.uchar)(C.CBytes(byt)), C.ulong(len(byt)), C.imageflow_lifetime_lifetime_outlives_function_call)
 }
 
 // AddOutput add output to context
-func (job *Job) AddOutput(id int) {
+func (job *Job) AddOutput(id uint) {
 	C.imageflow_context_add_output_buffer(job.inner, C.int(id))
 
 }
@@ -37,7 +37,7 @@ func New() Job {
 }
 
 // GetOutput from the context
-func (job *Job) GetOutput(id int) []byte {
+func (job *Job) GetOutput(id uint) []byte {
 	ptr := (*C.uchar)(C.malloc(C.size_t(unsafe.Sizeof(uintptr(0)))))
 	l := 0
 	le := (*C.ulong)(unsafe.Pointer(&l))
