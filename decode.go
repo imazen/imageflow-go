@@ -136,10 +136,10 @@ type Color interface {
 }
 
 // Black is the Implementation of interface Color and used as color black
-type Black string
+type Black struct{}
 
 // ToColor is used to convert to black color
-func (black *Black) ToColor() string {
+func (black Black) ToColor() interface{} {
 	return "black"
 }
 
@@ -239,7 +239,7 @@ type RegionPercentage struct {
 func (region RegionPercentage) ToStep() interface{} {
 	region.BackgroundColor = region.BackgroundColor.(Color).ToColor()
 	stepMap := make(map[string]Step)
-	stepMap["region_percentage"] = region
+	stepMap["region_percent"] = region
 	return stepMap
 }
 
@@ -296,4 +296,114 @@ func (rotate FlipH) ToStep() string {
 // ToStep is used to convert the rotate to step
 func (rotate FlipV) ToStep() string {
 	return "flip_v"
+}
+
+// FillRect is  used to fill a rectangle
+type FillRect struct {
+	X1    float64     `json:"x1"`
+	Y1    float64     `json:"y1"`
+	X2    float64     `json:"x2"`
+	Y2    float64     `json:"y2"`
+	Color interface{} `json:"color"`
+}
+
+// ToStep create a step from FillRect
+func (region FillRect) ToStep() interface{} {
+	stepMap := make(map[string]Step)
+	region.Color = region.Color.(Color).ToColor()
+	stepMap["fill_rect"] = region
+	return stepMap
+}
+
+// ExpandCanvas is used to expand the image
+type ExpandCanvas struct {
+	Left   float64     `json:"left"`
+	Right  float64     `json:"right"`
+	Top    float64     `json:"top"`
+	Bottom float64     `json:"bottom"`
+	Color  interface{} `json:"color"`
+}
+
+// ToStep create a step from FillRect
+func (region ExpandCanvas) ToStep() interface{} {
+	stepMap := make(map[string]Step)
+	region.Color = region.Color.(Color).ToColor()
+	stepMap["expand_canvas"] = region
+	return stepMap
+}
+
+// Watermark is used to create a watermark
+type Watermark struct {
+	IoID    uint        `json:"io_id"`
+	Gravity interface{} `json:"gravity"`
+	FitMode string      `json:"fit_mode"`
+	FitBox  interface{} `json:"fit_box"`
+	Opacity float32     `json:"opacity"`
+	Hints   interface{} `json:"hints"`
+}
+
+// FitBox is used to specify image position
+type FitBox interface {
+	toFitBox() interface{}
+}
+
+// MarginFitBox is used to specify image position
+type MarginFitBox struct {
+	Left   float64 `json:"left"`
+	Right  float64 `json:"right"`
+	Top    float64 `json:"top"`
+	Bottom float64 `json:"bottom"`
+}
+
+// PercentageFitBox is used to specify image position
+type PercentageFitBox struct {
+	X1 float64 `json:"x1"`
+	Y1 float64 `json:"y1"`
+	X2 float64 `json:"x2"`
+	Y2 float64 `json:"y2"`
+}
+
+func (percent PercentageFitBox) toFitBox() interface{} {
+	fitMap := make(map[string]FitBox)
+	fitMap["image_percentage"] = percent
+	return fitMap
+}
+
+func (percent MarginFitBox) toFitBox() interface{} {
+	fitMap := make(map[string]FitBox)
+	fitMap["image_margins"] = percent
+	return fitMap
+}
+
+// ToStep is used to convert watermark
+func (watermark Watermark) ToStep() interface{} {
+	if watermark.FitMode == "" {
+		watermark.FitMode = "within"
+	}
+	if watermark.Opacity == 0 {
+		watermark.Opacity = 1
+	}
+
+	if watermark.FitBox != nil {
+		watermark.FitBox = watermark.FitBox.(FitBox).toFitBox()
+	}
+	stepMap := make(map[string]Step)
+	if watermark.Gravity != nil {
+		watermark.Gravity = watermark.Gravity.(ConstraintGravity).ToGravity()
+	}
+	if watermark.Hints != nil {
+		watermark.Hints = watermark.Hints.(ConstraintHint)
+	}
+	stepMap["watermark"] = watermark
+	return stepMap
+}
+
+func singleMap(name string, value interface{}) map[string]interface{} {
+	returnMap := make(map[string]interface{})
+	returnMap[name] = value
+	return returnMap
+}
+
+func doubleMap(first string, second string, value interface{}) map[string]interface{} {
+	return singleMap(first, singleMap(second, value))
 }

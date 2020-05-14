@@ -23,16 +23,35 @@ func TestJob(t *testing.T) {
 
 func TestStep(t *testing.T) {
 	step := NewStep()
-	step.Decode(&File{filename: "image.jpg"}).FlipV().ConstrainWithinW(400).Branch(func(step *Steps) {
-		step.ConstrainWithin(100, 100).Rotate180().Encode(&File{filename: "small.jpg"}, MozJPEG{})
-	}).Encode(&File{filename: "medium.jpg"}, MozJPEG{}).Execute()
+	step.Decode(&File{filename: "image.jpg"}).FlipV().Watermark(&File{filename: "image.jpg"}, nil, "within", PercentageFitBox{
+		X1: 0,
+		Y1: 0,
+		X2: 50,
+		Y2: 50,
+	}, 0.3, nil).ConstrainWithinW(400).FillRect(0, 0, 8, 8, Black{}).Branch(func(step *Steps) {
+		step.ConstrainWithin(100, 100).Rotate180().Region(Region{
+			X1:              0,
+			Y1:              0,
+			X2:              200,
+			Y2:              200,
+			BackgroundColor: Black{},
+		}).Branch(func(step *Steps) {
+			step.GrayscaleFlat().Encode(&File{filename: "gray_small.jpg"}, MozJPEG{})
+		}).Encode(&File{filename: "small.jpg"}, MozJPEG{})
+	}).ExpandCanvas(ExpandCanvas{Top: 10, Color: Black{}}).Encode(&File{filename: "medium.jpg"}, MozJPEG{}).Execute()
 }
 
 func BenchmarkSteps(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		step := NewStep()
 		step.Decode(&Buffer{buffer: data}).ConstrainWithinW(400).Branch(func(step *Steps) {
-			step.ConstrainWithin(100, 100).Rotate180().Encode(&Buffer{}, MozJPEG{})
+			step.ConstrainWithin(100, 100).Region(Region{
+				X1:              0,
+				Y1:              0,
+				X2:              200,
+				Y2:              200,
+				BackgroundColor: Black{},
+			}).Rotate180().Encode(&Buffer{}, MozJPEG{})
 		}).Encode(&Buffer{}, MozJPEG{}).Execute()
 	}
 }

@@ -218,6 +218,138 @@ func (steps *Steps) Branch(f func(*Steps)) *Steps {
 	return steps
 }
 
+// Region is used to crop or add padding to image
+func (steps *Steps) Region(region Region) *Steps {
+	steps.input(region.ToStep())
+	return steps
+}
+
+// RegionPercentage is used to crop or add padding to image using percentage
+func (steps *Steps) RegionPercentage(region RegionPercentage) *Steps {
+	steps.input(region.ToStep())
+	return steps
+}
+
+// CropWhitespace is used to remove whitespace around the image
+func (steps *Steps) CropWhitespace(threshold int, padding float64) *Steps {
+	steps.input(CropWhitespace{Threshold: threshold, PercentagePadding: padding}.ToStep())
+	return steps
+}
+
+// FillRect is used create a rectangle on the image
+func (steps *Steps) FillRect(x1 float64, y1 float64, x2 float64, y2 float64, color Color) *Steps {
+	steps.input(FillRect{X1: x1, Y1: y1, X2: x2, Y2: y2, Color: color}.ToStep())
+	return steps
+}
+
+// ExpandCanvas is used create a rectangle on the image
+func (steps *Steps) ExpandCanvas(canvas ExpandCanvas) *Steps {
+	steps.input(canvas.ToStep())
+	return steps
+}
+
+// Watermark is used to watermark a image
+func (steps *Steps) Watermark(data ioOperation, gravity interface{}, fitmode string, fitBox FitBox, opacity float32, hint interface{}) *Steps {
+	data.setIo(uint(steps.ioID))
+	steps.inputs = append(steps.inputs, data)
+	steps.input(Watermark{
+		IoID:    uint(steps.ioID),
+		Gravity: gravity,
+		FitMode: fitmode,
+		FitBox:  fitBox,
+	}.ToStep())
+	steps.ioID++
+	return steps
+}
+
+// Command is used to execute query like strings
+func (steps *Steps) Command(cmd string) *Steps {
+	cmdMap := make(map[string]map[string]string)
+	dataMap := make(map[string]string)
+	dataMap["kind"] = "ir4"
+	dataMap["value"] = cmd
+	cmdMap["command_string"] = dataMap
+	steps.input(cmdMap)
+	return steps
+}
+
+// WhiteBalanceSRGB histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) WhiteBalanceSRGB(threshold float32) *Steps {
+	steps.input(doubleMap("white_balance_histogram_area_threshold_srgb", "threshold", threshold))
+	return steps
+}
+
+// GrayscaleNTSC histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) GrayscaleNTSC() *Steps {
+	return steps.colorFilterSRGB("grayscale_ntsc")
+}
+
+// GrayscaleFlat histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) GrayscaleFlat() *Steps {
+	return steps.colorFilterSRGB("grayscale_flat")
+}
+
+// GrayscaleBT709 histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) GrayscaleBT709() *Steps {
+	return steps.colorFilterSRGB("grayscale_bt709")
+}
+
+// GrayscaleRY histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) GrayscaleRY() *Steps {
+	return steps.colorFilterSRGB("grayscale_ry")
+}
+
+// Sepia histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) Sepia() *Steps {
+	return steps.colorFilterSRGB("sepia")
+}
+
+// Invert histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) Invert() *Steps {
+	return steps.colorFilterSRGB("invert")
+}
+
+func (steps *Steps) colorFilterSRGB(value string) *Steps {
+	steps.input(singleMap("color_filter_srgb", value))
+	return steps
+}
+
+// Alpha histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) Alpha(value float32) *Steps {
+	return steps.colorFilterSRGBValue("alpha", value)
+}
+
+// Contrast histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) Contrast(value float32) *Steps {
+	return steps.colorFilterSRGBValue("contrast", value)
+}
+
+// Brightness histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) Brightness(value float32) *Steps {
+	return steps.colorFilterSRGBValue("brightness", value)
+}
+
+// Saturation histogram area
+// This command is not recommended as it operates in the sRGB space and does not produce perfect results.
+func (steps *Steps) Saturation(value float32) *Steps {
+	return steps.colorFilterSRGBValue("saturation", value)
+}
+
+func (steps *Steps) colorFilterSRGBValue(name string, value float32) *Steps {
+	steps.input(doubleMap("color_filter_srgb", name, value))
+	return steps
+}
+
 // Step specify different nodes
 type Step interface {
 	ToStep() interface{}
