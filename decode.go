@@ -47,7 +47,7 @@ func (preset MozJPEG) ToPreset() interface{} {
 }
 
 // GIF is used to encode to gif
-type GIF string
+type GIF struct{}
 
 // ToPreset is used to convert the GIF to preset
 func (gif GIF) ToPreset() string {

@@ -259,13 +259,13 @@ func (steps *Steps) ExpandCanvas(canvas ExpandCanvas) *Steps {
 }
 
 // Watermark is used to watermark a image
-func (steps *Steps) Watermark(data ioOperation, gravity interface{}, fitmode string, fitBox FitBox, opacity float32, hint interface{}) *Steps {
+func (steps *Steps) Watermark(data ioOperation, gravity interface{}, fitMode string, fitBox FitBox, opacity float32, hint interface{}) *Steps {
 	data.setIo(uint(steps.ioID))
 	steps.inputs = append(steps.inputs, data)
 	steps.input(Watermark{
 		IoID:    uint(steps.ioID),
 		Gravity: gravity,
-		FitMode: fitmode,
+		FitMode: fitMode,
 		FitBox:  fitBox,
 	}.ToStep())
 	steps.ioID++
