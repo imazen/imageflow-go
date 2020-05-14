@@ -5,6 +5,12 @@ import (
 	"testing"
 )
 
+var data []byte
+
+func init() {
+	data, _ = ioutil.ReadFile("image.jpg")
+}
+
 func TestJob(t *testing.T) {
 	job := New()
 	data, _ := ioutil.ReadFile("image.jpg")
@@ -17,7 +23,16 @@ func TestJob(t *testing.T) {
 
 func TestStep(t *testing.T) {
 	step := NewStep()
-	step.Decode(&File{filename: "image.jpg"}).ConstrainWithinW(400).Branch(func(step *Steps) {
-		step.ConstrainWithin(100, 100).Encode(&File{filename: "small.jpg"}, MozJPEG{})
+	step.Decode(&File{filename: "image.jpg"}).FlipV().ConstrainWithinW(400).Branch(func(step *Steps) {
+		step.ConstrainWithin(100, 100).Rotate180().Encode(&File{filename: "small.jpg"}, MozJPEG{})
 	}).Encode(&File{filename: "medium.jpg"}, MozJPEG{}).Execute()
+}
+
+func BenchmarkSteps(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		step := NewStep()
+		step.Decode(&Buffer{buffer: data}).ConstrainWithinW(400).Branch(func(step *Steps) {
+			step.ConstrainWithin(100, 100).Rotate180().Encode(&Buffer{}, MozJPEG{})
+		}).Encode(&Buffer{}, MozJPEG{}).Execute()
+	}
 }

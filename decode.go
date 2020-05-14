@@ -94,7 +94,7 @@ func (preset WebP) ToPreset() interface{} {
 }
 
 // WebPLossless is used to encode using webplossless encoder
-type WebPLossless string
+type WebPLossless struct{}
 
 // ToPreset is used to convert WebPLossless to preset
 func (preset WebPLossless) ToPreset() string {
@@ -259,7 +259,7 @@ func (region CropWhitespace) ToStep() interface{} {
 }
 
 // Rotate90 rotate the image by 90 degree
-type Rotate90 string
+type Rotate90 struct{}
 
 // ToStep is used to convert the rotate to step
 func (rotate Rotate90) ToStep() string {
@@ -267,7 +267,7 @@ func (rotate Rotate90) ToStep() string {
 }
 
 // Rotate180 rotate the image by 90 degree
-type Rotate180 string
+type Rotate180 struct{}
 
 // ToStep is used to convert the rotate to step
 func (rotate Rotate180) ToStep() string {
@@ -275,9 +275,25 @@ func (rotate Rotate180) ToStep() string {
 }
 
 // Rotate270 rotate the image by 90 degree
-type Rotate270 string
+type Rotate270 struct{}
 
 // ToStep is used to convert the rotate to step
 func (rotate Rotate270) ToStep() string {
-	return "rotate_90"
+	return "rotate_270"
+}
+
+// FlipH is used to flip the image horizontally
+type FlipH struct{}
+
+// FlipV is used to flip the image vertical
+type FlipV struct{}
+
+// ToStep is used to convert the rotate to step
+func (rotate FlipH) ToStep() string {
+	return "flip_h"
+}
+
+// ToStep is used to convert the rotate to step
+func (rotate FlipV) ToStep() string {
+	return "flip_v"
 }

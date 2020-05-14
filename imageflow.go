@@ -40,6 +40,28 @@ func (file File) getIo() uint {
 	return file.IOID
 }
 
+// Buffer is io operation related to []byte
+type Buffer struct {
+	IOID   uint
+	buffer []byte
+}
+
+func (file Buffer) toBuffer() []byte {
+	return file.buffer
+}
+
+func (file Buffer) toOutput(data []byte, m *map[string][]byte) *map[string][]byte {
+	return m
+}
+
+func (file *Buffer) setIo(id uint) {
+	file.IOID = id
+}
+
+func (file Buffer) getIo() uint {
+	return file.IOID
+}
+
 // File is io operation related to file
 type File struct {
 	IOID      uint `json:"io_id"`
@@ -52,7 +74,6 @@ type File struct {
 func (steps *Steps) Decode(task ioOperation) *Steps {
 	steps.inputs = append(steps.inputs, task)
 	task.setIo(uint(steps.ioID))
-	steps.innerGraph.AddVertex()
 	steps.vertex = append(steps.vertex, Decode{
 		IoID: steps.ioID,
 	}.ToStep())
@@ -106,8 +127,42 @@ func (steps *Steps) Encode(task ioOperation, preset Preset) *Steps {
 	return steps
 }
 
+// Rotate90 is to used to rotate by 90 degrees
+func (steps *Steps) Rotate90() *Steps {
+	rotate := Rotate90{}
+	steps.input(rotate.ToStep())
+	return steps
+}
+
+// Rotate180 is to used to rotate by 180 degrees
+func (steps *Steps) Rotate180() *Steps {
+	rotate := Rotate180{}
+	steps.input(rotate.ToStep())
+	return steps
+}
+
+// Rotate270 is to used to rotate by 270 degrees
+func (steps *Steps) Rotate270() *Steps {
+	rotate := Rotate180{}
+	steps.input(rotate.ToStep())
+	return steps
+}
+
+// FlipH is to used to flip image horizontally
+func (steps *Steps) FlipH() *Steps {
+	rotate := FlipH{}
+	steps.input(rotate.ToStep())
+	return steps
+}
+
+// FlipV is to used to flip image horizontally
+func (steps *Steps) FlipV() *Steps {
+	rotate := FlipV{}
+	steps.input(rotate.ToStep())
+	return steps
+}
+
 func (steps *Steps) input(step interface{}) {
-	steps.innerGraph.AddVertex()
 	steps.vertex = append(steps.vertex, step)
 	steps.innerGraph.AddEdge(steps.last, uint(len(steps.vertex)-1), "input")
 	steps.last = uint(len(steps.vertex) - 1)
@@ -177,14 +232,11 @@ type graph struct {
 	edges []edge
 }
 
-func (gr *graph) AddVertex() {
-	//gr.inner = append(gr.inner, []uint{})
-}
-
 func (gr *graph) AddEdge(from uint, to uint, kind string) {
 	gr.edges = append(gr.edges, edge{To: to, Kind: kind, From: from})
 }
 
+// NewStep creates a step that can be used to specify how graph should be processed
 func NewStep() Steps {
 	return Steps{
 		vertex: []interface{}{},
