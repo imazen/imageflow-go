@@ -38,6 +38,14 @@ func TestStep(t *testing.T) {
 		}).Branch(func(step *Steps) {
 			step.GrayscaleFlat().Encode(&File{filename: "gray_small.jpg"}, MozJPEG{})
 		}).Encode(&File{filename: "small.jpg"}, MozJPEG{})
+	}).DrawExact(func(steps *Steps) {
+		steps.Decode(&File{filename: "image.jpg"})
+	}, DrawExact{
+		X:     0,
+		Y:     0,
+		W:     100,
+		H:     100,
+		Blend: "overwrite",
 	}).ExpandCanvas(ExpandCanvas{Top: 10, Color: Black{}}).Encode(&File{filename: "medium.jpg"}, MozJPEG{}).Execute()
 }
 

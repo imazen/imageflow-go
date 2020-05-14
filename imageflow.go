@@ -171,11 +171,21 @@ func (steps *Steps) input(step interface{}) {
 func (steps *Steps) canvas(f func(*Steps), step Step) *Steps {
 	last := steps.last
 	f(steps)
-	steps.vertex = append(steps.vertex, step)
+	steps.vertex = append(steps.vertex, step.ToStep())
 	steps.innerGraph.AddEdge(last, uint(len(steps.vertex)-1), "input")
 	steps.innerGraph.AddEdge(steps.last, uint(len(steps.vertex)-1), "canvas")
 	steps.last = uint(len(steps.vertex) - 1)
 	return steps
+}
+
+// CopyRectangle copy a image
+func (steps *Steps) CopyRectangle(f func(steps *Steps), rect RectangleToCanvas) *Steps {
+	return steps.canvas(f, rect)
+}
+
+// DrawExact copy a image
+func (steps *Steps) DrawExact(f func(steps *Steps), rect DrawExact) *Steps {
+	return steps.canvas(f, rect)
 }
 
 // Execute the graph

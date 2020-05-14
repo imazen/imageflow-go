@@ -407,3 +407,37 @@ func singleMap(name string, value interface{}) map[string]interface{} {
 func doubleMap(first string, second string, value interface{}) map[string]interface{} {
 	return singleMap(first, singleMap(second, value))
 }
+
+// RectangleToCanvas is used to copy a part of image
+type RectangleToCanvas struct {
+	FromX float32 `json:"from_x"`
+	FromY float32 `json:"from_y"`
+	W     float32 `json:"w"`
+	H     float32 `json:"h"`
+	X     float32 `json:"x"`
+	Y     float32 `json:"y"`
+}
+
+// ToStep convert rect to copy
+func (rect RectangleToCanvas) ToStep() interface{} {
+	rectMap := make(map[string]RectangleToCanvas)
+	rectMap["copy_rect_to_canvas"] = rect
+	return rectMap
+}
+
+// DrawExact is used to copy a part of image
+type DrawExact struct {
+	W     float32     `json:"w"`
+	H     float32     `json:"h"`
+	X     float32     `json:"x"`
+	Y     float32     `json:"y"`
+	Blend string      `json:"blend"`
+	Hints interface{} `json:"hints"`
+}
+
+// ToStep convert rect to copy
+func (rect DrawExact) ToStep() interface{} {
+	rectMap := make(map[string]DrawExact)
+	rectMap["draw_image_exact"] = rect
+	return rectMap
+}
