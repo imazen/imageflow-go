@@ -26,5 +26,5 @@ jobs:
       run: curl https://github.com/anshulrgoyal/imageflow/releases/download/v1.4.0-rc40/libimageflow.a -o libimageflow.a
 
     - name: Test
-      run: go test -ldflags="-extldflags=-static" -v
+      run: go test -ldflags=\"-extldflags=-static\" -v
  .
