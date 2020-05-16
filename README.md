@@ -1,4 +1,5 @@
 # imageflow-go
+![Windows](https://github.com/imazen/imageflow-go/workflows/Windows/badge.svg)![Macos](https://github.com/imazen/imageflow-go/workflows/Macos/badge.svg)![Linux](https://github.com/imazen/imageflow-go/workflows/Linux/badge.svg)
 
 # Usage Example
 

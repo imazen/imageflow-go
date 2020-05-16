@@ -53,5 +53,8 @@ ioutil
 limageflow
 uintptr
 upsampling
+extldflags
+staticlib
+ulonglong
 
 
