@@ -3,6 +3,7 @@ package imageflow
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net/http"
 )
 
 // Steps is the builder for creating a operation
@@ -16,38 +17,71 @@ type Steps struct {
 }
 
 type ioOperation interface {
-	toBuffer() []byte
+	toBuffer() ([]byte, error)
 	toOutput([]byte, *map[string][]byte) *map[string][]byte
 	setIo(id uint)
 	getIo() uint
 }
 
-func (file File) toBuffer() []byte {
-	bytes, _ := ioutil.ReadFile(file.filename)
-	return bytes
+func (file File) toBuffer() ([]byte, error) {
+	bytes, errorInRead := ioutil.ReadFile(file.Filename)
+	if errorInRead != nil {
+		return nil, errorInRead
+	}
+	return bytes, nil
 }
 
 func (file File) toOutput(data []byte, m *map[string][]byte) *map[string][]byte {
-	ioutil.WriteFile(file.filename, data, 0644)
+	ioutil.WriteFile(file.Filename, data, 0644)
 	return m
 }
 
 func (file *File) setIo(id uint) {
-	file.IOID = id
+	file.iOID = id
 }
 
 func (file File) getIo() uint {
-	return file.IOID
+	return file.iOID
+}
+
+func (file URL) toBuffer() ([]byte, error) {
+	bytes, errorInURL := http.Get(file.URL)
+	if errorInURL != nil {
+		return nil, errorInURL
+	}
+	data, errorInRead := ioutil.ReadAll(bytes.Body)
+	if errorInRead != nil {
+		return nil, errorInRead
+	}
+	return data, nil
+}
+
+func (file URL) toOutput(data []byte, m *map[string][]byte) *map[string][]byte {
+	return m
+}
+
+func (file *URL) setIo(id uint) {
+	file.iOID = id
+}
+
+func (file URL) getIo() uint {
+	return file.iOID
+}
+
+// URL is used to make a http rerquest to get file and use it
+type URL struct {
+	URL  string
+	iOID uint
 }
 
 // Buffer is io operation related to []byte
 type Buffer struct {
-	IOID   uint
-	buffer []byte
+	iOID   uint
+	Buffer []byte
 }
 
-func (file Buffer) toBuffer() []byte {
-	return file.buffer
+func (file Buffer) toBuffer() ([]byte, error) {
+	return file.Buffer, nil
 }
 
 func (file Buffer) toOutput(data []byte, m *map[string][]byte) *map[string][]byte {
@@ -55,19 +89,17 @@ func (file Buffer) toOutput(data []byte, m *map[string][]byte) *map[string][]byt
 }
 
 func (file *Buffer) setIo(id uint) {
-	file.IOID = id
+	file.iOID = id
 }
 
 func (file Buffer) getIo() uint {
-	return file.IOID
+	return file.iOID
 }
 
 // File is io operation related to file
 type File struct {
-	IOID      uint `json:"io_id"`
-	filename  string
-	Direction string `json:"direction"`
-	IO        string `json:"io"`
+	iOID     uint
+	Filename string
 }
 
 // Decode is used to import a image
@@ -76,7 +108,7 @@ func (steps *Steps) Decode(task ioOperation) *Steps {
 	task.setIo(uint(steps.ioID))
 	steps.vertex = append(steps.vertex, Decode{
 		IoID: steps.ioID,
-	}.ToStep())
+	}.toStep())
 	steps.ioID++
 	steps.last = uint(len(steps.vertex) - 1)
 	return steps
@@ -122,7 +154,7 @@ func (steps *Steps) Encode(task ioOperation, preset Preset) *Steps {
 	steps.input(Encode{
 		IoID:   steps.ioID,
 		Preset: preset.ToPreset(),
-	}.ToStep())
+	}.toStep())
 	steps.ioID++
 	return steps
 }
@@ -130,35 +162,35 @@ func (steps *Steps) Encode(task ioOperation, preset Preset) *Steps {
 // Rotate90 is to used to rotate by 90 degrees
 func (steps *Steps) Rotate90() *Steps {
 	rotate := Rotate90{}
-	steps.input(rotate.ToStep())
+	steps.input(rotate.toStep())
 	return steps
 }
 
 // Rotate180 is to used to rotate by 180 degrees
 func (steps *Steps) Rotate180() *Steps {
 	rotate := Rotate180{}
-	steps.input(rotate.ToStep())
+	steps.input(rotate.toStep())
 	return steps
 }
 
 // Rotate270 is to used to rotate by 270 degrees
 func (steps *Steps) Rotate270() *Steps {
 	rotate := Rotate180{}
-	steps.input(rotate.ToStep())
+	steps.input(rotate.toStep())
 	return steps
 }
 
 // FlipH is to used to flip image horizontally
 func (steps *Steps) FlipH() *Steps {
 	rotate := FlipH{}
-	steps.input(rotate.ToStep())
+	steps.input(rotate.toStep())
 	return steps
 }
 
 // FlipV is to used to flip image horizontally
 func (steps *Steps) FlipV() *Steps {
 	rotate := FlipV{}
-	steps.input(rotate.ToStep())
+	steps.input(rotate.toStep())
 	return steps
 }
 
@@ -171,7 +203,7 @@ func (steps *Steps) input(step interface{}) {
 func (steps *Steps) canvas(f func(*Steps), step Step) *Steps {
 	last := steps.last
 	f(steps)
-	steps.vertex = append(steps.vertex, step.ToStep())
+	steps.vertex = append(steps.vertex, step.toStep())
 	steps.innerGraph.AddEdge(last, uint(len(steps.vertex)-1), "input")
 	steps.innerGraph.AddEdge(steps.last, uint(len(steps.vertex)-1), "canvas")
 	steps.last = uint(len(steps.vertex) - 1)
@@ -189,7 +221,7 @@ func (steps *Steps) DrawExact(f func(steps *Steps), rect DrawExact) *Steps {
 }
 
 // Execute the graph
-func (steps *Steps) Execute() map[string][]byte {
+func (steps *Steps) Execute() (map[string][]byte, error) {
 	jsonMap := make(map[string]interface{})
 	graphMap := make(map[string]interface{})
 	nodeMap := make(map[int]interface{})
@@ -204,20 +236,36 @@ func (steps *Steps) Execute() map[string][]byte {
 	js, _ := json.Marshal(jsonMap)
 	job := New()
 	for i := 0; i < len(steps.inputs); i++ {
-		data := steps.inputs[i].toBuffer()
-		job.AddInput(steps.inputs[i].getIo(), data)
+		data, errorInBuffer := steps.inputs[i].toBuffer()
+		if errorInBuffer != nil {
+			return nil, errorInBuffer
+		}
+		errorInInput := job.AddInput(steps.inputs[i].getIo(), data)
+		if errorInInput != nil {
+			return nil, errorInInput
+		}
 	}
 	for i := 0; i < len(steps.outputs); i++ {
-		job.AddOutput(steps.outputs[i].getIo())
+		errorInOutput := job.AddOutput(steps.outputs[i].getIo())
+		if errorInOutput != nil {
+			return nil, errorInOutput
+		}
 	}
-	job.Message(js)
+	errorInMessage := job.Message(js)
+
+	if errorInMessage != nil {
+		return nil, errorInMessage
+	}
 
 	bufferMap := make(map[string][]byte)
 	for i := 0; i < len(steps.outputs); i++ {
-		data := job.GetOutput(steps.outputs[i].getIo())
+		data, errorInOutput := job.GetOutput(steps.outputs[i].getIo())
+		if errorInOutput != nil {
+			return nil, errorInOutput
+		}
 		steps.outputs[i].toOutput(data, &bufferMap)
 	}
-	return bufferMap
+	return bufferMap, nil
 }
 
 // Branch create a alternate path for the output
@@ -230,31 +278,31 @@ func (steps *Steps) Branch(f func(*Steps)) *Steps {
 
 // Region is used to crop or add padding to image
 func (steps *Steps) Region(region Region) *Steps {
-	steps.input(region.ToStep())
+	steps.input(region.toStep())
 	return steps
 }
 
 // RegionPercentage is used to crop or add padding to image using percentage
 func (steps *Steps) RegionPercentage(region RegionPercentage) *Steps {
-	steps.input(region.ToStep())
+	steps.input(region.toStep())
 	return steps
 }
 
 // CropWhitespace is used to remove whitespace around the image
 func (steps *Steps) CropWhitespace(threshold int, padding float64) *Steps {
-	steps.input(CropWhitespace{Threshold: threshold, PercentagePadding: padding}.ToStep())
+	steps.input(CropWhitespace{Threshold: threshold, PercentagePadding: padding}.toStep())
 	return steps
 }
 
 // FillRect is used create a rectangle on the image
 func (steps *Steps) FillRect(x1 float64, y1 float64, x2 float64, y2 float64, color Color) *Steps {
-	steps.input(FillRect{X1: x1, Y1: y1, X2: x2, Y2: y2, Color: color}.ToStep())
+	steps.input(FillRect{X1: x1, Y1: y1, X2: x2, Y2: y2, Color: color}.toStep())
 	return steps
 }
 
 // ExpandCanvas is used create a rectangle on the image
 func (steps *Steps) ExpandCanvas(canvas ExpandCanvas) *Steps {
-	steps.input(canvas.ToStep())
+	steps.input(canvas.toStep())
 	return steps
 }
 
@@ -267,7 +315,7 @@ func (steps *Steps) Watermark(data ioOperation, gravity interface{}, fitMode str
 		Gravity: gravity,
 		FitMode: fitMode,
 		FitBox:  fitBox,
-	}.ToStep())
+	}.toStep())
 	steps.ioID++
 	return steps
 }
@@ -362,7 +410,7 @@ func (steps *Steps) colorFilterSRGBValue(name string, value float32) *Steps {
 
 // Step specify different nodes
 type Step interface {
-	ToStep() interface{}
+	toStep() interface{}
 }
 
 type edge struct {

@@ -8,28 +8,60 @@ package imageflow
 */
 import "C"
 import (
+	"errors"
 	"unsafe"
 )
 
 // Job to perform a task in imageflow
 type Job struct {
 	inner *C.struct_imageflow_context
+	err   bool
+}
+
+// CheckError is used to check if the context has error or not
+func (job Job) CheckError() bool {
+	if job.err {
+		return true
+	}
+	val := C.imageflow_context_has_error(job.inner)
+	if bool(val) {
+		C.imageflow_context_destroy(job.inner)
+		job.inner = nil
+		job.err = true
+	}
+	return bool(val)
 }
 
 // AddInput add input to context
-func (job *Job) AddInput(id uint, byt []byte) {
-	C.imageflow_context_add_input_buffer(job.inner, C.int(id), (*C.uchar)(C.CBytes(byt)), C.ulong(len(byt)), C.imageflow_lifetime_lifetime_outlives_function_call)
+func (job *Job) AddInput(id uint, byt []byte) error {
+	if job.CheckError() {
+		return errors.New("Error in context")
+	}
+	result := C.imageflow_context_add_input_buffer(job.inner, C.int(id), (*C.uchar)(C.CBytes(byt)), C.ulong(len(byt)), C.imageflow_lifetime_lifetime_outlives_function_call)
+	if !bool(result) {
+		return errors.New("Error adding input buffer")
+	}
+	return nil
 }
 
 // AddOutput add output to context
-func (job *Job) AddOutput(id uint) {
-	C.imageflow_context_add_output_buffer(job.inner, C.int(id))
+func (job *Job) AddOutput(id uint) error {
+	result := C.imageflow_context_add_output_buffer(job.inner, C.int(id))
 
+	if !bool(result) {
+		return errors.New("Error in adding outputs")
+	}
+
+	return nil
 }
 
 // Message execute a command
-func (job *Job) Message(message []byte) {
+func (job *Job) Message(message []byte) error {
 	C.imageflow_context_send_json(job.inner, C.CString("v1/execute"), (*C.uchar)(C.CBytes(message)), C.ulong(len(message)))
+	if job.CheckError() {
+		return errors.New("Error in context")
+	}
+	return nil
 }
 
 // New Create a context
@@ -39,10 +71,14 @@ func New() Job {
 }
 
 // GetOutput from the context
-func (job *Job) GetOutput(id uint) []byte {
+func (job *Job) GetOutput(id uint) ([]byte, error) {
 	ptr := (*C.uchar)(C.malloc(C.size_t(unsafe.Sizeof(uintptr(0)))))
 	l := 0
 	le := (*C.ulong)(unsafe.Pointer(&l))
-	C.imageflow_context_get_output_buffer_by_id(job.inner, C.int(id), (&ptr), le)
-	return C.GoBytes((unsafe.Pointer)(ptr), C.int(l))
+	result := C.imageflow_context_get_output_buffer_by_id(job.inner, C.int(id), (&ptr), le)
+
+	if !bool(result) {
+		return nil, errors.New("Error in adding outputs")
+	}
+	return C.GoBytes((unsafe.Pointer)(ptr), C.int(l)), nil
 }

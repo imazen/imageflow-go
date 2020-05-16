@@ -18,12 +18,13 @@ func TestJob(t *testing.T) {
 	job.AddInput(0, data)
 	job.AddOutput(1)
 	job.Message(command)
-	ioutil.WriteFile("./output.jpg", job.GetOutput(1), 0644)
+	result, _ := job.GetOutput(1)
+	ioutil.WriteFile("./output.jpg", result, 0644)
 }
 
 func TestStep(t *testing.T) {
 	step := NewStep()
-	step.Decode(&File{filename: "image.jpg"}).FlipV().Watermark(&File{filename: "image.jpg"}, nil, "within", PercentageFitBox{
+	step.Decode(&URL{URL: "https://jpeg.org/images/jpeg2000-home.jpg"}).FlipV().Watermark(&File{Filename: "image.jpg"}, nil, "within", PercentageFitBox{
 		X1: 0,
 		Y1: 0,
 		X2: 50,
@@ -36,23 +37,23 @@ func TestStep(t *testing.T) {
 			Y2:              200,
 			BackgroundColor: Black{},
 		}).Branch(func(step *Steps) {
-			step.GrayscaleFlat().Encode(&File{filename: "gray_small.jpg"}, MozJPEG{})
-		}).Encode(&File{filename: "small.jpg"}, MozJPEG{})
+			step.GrayscaleFlat().Encode(&File{Filename: "gray_small.jpg"}, MozJPEG{})
+		}).Encode(&File{Filename: "small.jpg"}, MozJPEG{})
 	}).DrawExact(func(steps *Steps) {
-		steps.Decode(&File{filename: "image.jpg"})
+		steps.Decode(&File{Filename: "image.jpg"})
 	}, DrawExact{
 		X:     0,
 		Y:     0,
 		W:     100,
 		H:     100,
 		Blend: "overwrite",
-	}).ExpandCanvas(ExpandCanvas{Top: 10, Color: Black{}}).Encode(&File{filename: "medium.jpg"}, MozJPEG{}).Execute()
+	}).ExpandCanvas(ExpandCanvas{Top: 10, Color: Black{}}).Encode(&File{Filename: "medium.jpg"}, MozJPEG{}).Execute()
 }
 
 func BenchmarkSteps(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		step := NewStep()
-		step.Decode(&Buffer{buffer: data}).ConstrainWithinW(400).Branch(func(step *Steps) {
+		step.Decode(&Buffer{Buffer: data}).ConstrainWithinW(400).Branch(func(step *Steps) {
 			step.ConstrainWithin(100, 100).Region(Region{
 				X1:              0,
 				Y1:              0,

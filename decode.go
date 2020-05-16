@@ -5,8 +5,8 @@ type Decode struct {
 	IoID int `json:"io_id"`
 }
 
-// ToStep is used to convert a Decode to step
-func (decode Decode) ToStep() map[string]interface{} {
+// toStep is used to convert a Decode to step
+func (decode Decode) toStep() map[string]interface{} {
 	decodeMap := make(map[string]interface{})
 	decodeMap["decode"] = decode
 	return decodeMap
@@ -23,8 +23,8 @@ type Encode struct {
 	Preset interface{} `json:"preset"`
 }
 
-// ToStep is used to convert a Encode to step
-func (encode Encode) ToStep() interface{} {
+// toStep is used to convert a Encode to step
+func (encode Encode) toStep() interface{} {
 	encodeMap := make(map[string]interface{})
 	encodeMap["encode"] = encode
 	return encodeMap
@@ -191,8 +191,8 @@ type ConstraintHint struct {
 	SharpenWhen       interface{} `json:"sharpen_when"`
 }
 
-// ToStep Converts the Constraint to a step
-func (step Constrain) ToStep() interface{} {
+// toStep Converts the Constraint to a step
+func (step Constrain) toStep() interface{} {
 	if step.Hint.BackgroundColor != nil {
 		step.Hint.BackgroundColor = step.Hint.BackgroundColor.(Color).ToColor()
 	}
@@ -217,8 +217,8 @@ type Region struct {
 	BackgroundColor interface{} `json:"background_color"`
 }
 
-// ToStep create a step from Region
-func (region Region) ToStep() interface{} {
+// toStep create a step from Region
+func (region Region) toStep() interface{} {
 	region.BackgroundColor = region.BackgroundColor.(Color).ToColor()
 	stepMap := make(map[string]Step)
 	stepMap["region"] = region
@@ -235,8 +235,8 @@ type RegionPercentage struct {
 	BackgroundColor interface{} `json:"background_color"`
 }
 
-// ToStep create a step from Region
-func (region RegionPercentage) ToStep() interface{} {
+// toStep create a step from Region
+func (region RegionPercentage) toStep() interface{} {
 	region.BackgroundColor = region.BackgroundColor.(Color).ToColor()
 	stepMap := make(map[string]Step)
 	stepMap["region_percent"] = region
@@ -251,8 +251,8 @@ type CropWhitespace struct {
 	PercentagePadding float64 `json:"percentage_padding"`
 }
 
-// ToStep create a step from Region
-func (region CropWhitespace) ToStep() interface{} {
+// toStep create a step from Region
+func (region CropWhitespace) toStep() interface{} {
 	stepMap := make(map[string]Step)
 	stepMap["crop_whitespace"] = region
 	return stepMap
@@ -261,24 +261,24 @@ func (region CropWhitespace) ToStep() interface{} {
 // Rotate90 rotate the image by 90 degree
 type Rotate90 struct{}
 
-// ToStep is used to convert the rotate to step
-func (rotate Rotate90) ToStep() string {
+// toStep is used to convert the rotate to step
+func (rotate Rotate90) toStep() string {
 	return "rotate_90"
 }
 
 // Rotate180 rotate the image by 90 degree
 type Rotate180 struct{}
 
-// ToStep is used to convert the rotate to step
-func (rotate Rotate180) ToStep() string {
+// toStep is used to convert the rotate to step
+func (rotate Rotate180) toStep() string {
 	return "rotate_180"
 }
 
 // Rotate270 rotate the image by 90 degree
 type Rotate270 struct{}
 
-// ToStep is used to convert the rotate to step
-func (rotate Rotate270) ToStep() string {
+// toStep is used to convert the rotate to step
+func (rotate Rotate270) toStep() string {
 	return "rotate_270"
 }
 
@@ -288,13 +288,13 @@ type FlipH struct{}
 // FlipV is used to flip the image vertical
 type FlipV struct{}
 
-// ToStep is used to convert the rotate to step
-func (rotate FlipH) ToStep() string {
+// toStep is used to convert the rotate to step
+func (rotate FlipH) toStep() string {
 	return "flip_h"
 }
 
-// ToStep is used to convert the rotate to step
-func (rotate FlipV) ToStep() string {
+// toStep is used to convert the rotate to step
+func (rotate FlipV) toStep() string {
 	return "flip_v"
 }
 
@@ -307,8 +307,8 @@ type FillRect struct {
 	Color interface{} `json:"color"`
 }
 
-// ToStep create a step from FillRect
-func (region FillRect) ToStep() interface{} {
+// toStep create a step from FillRect
+func (region FillRect) toStep() interface{} {
 	stepMap := make(map[string]Step)
 	region.Color = region.Color.(Color).ToColor()
 	stepMap["fill_rect"] = region
@@ -324,8 +324,8 @@ type ExpandCanvas struct {
 	Color  interface{} `json:"color"`
 }
 
-// ToStep create a step from FillRect
-func (region ExpandCanvas) ToStep() interface{} {
+// toStep create a step from FillRect
+func (region ExpandCanvas) toStep() interface{} {
 	stepMap := make(map[string]Step)
 	region.Color = region.Color.(Color).ToColor()
 	stepMap["expand_canvas"] = region
@@ -375,8 +375,8 @@ func (percent MarginFitBox) toFitBox() interface{} {
 	return fitMap
 }
 
-// ToStep is used to convert watermark
-func (watermark Watermark) ToStep() interface{} {
+// toStep is used to convert watermark
+func (watermark Watermark) toStep() interface{} {
 	if watermark.FitMode == "" {
 		watermark.FitMode = "within"
 	}
@@ -418,8 +418,8 @@ type RectangleToCanvas struct {
 	Y     float32 `json:"y"`
 }
 
-// ToStep convert rect to copy
-func (rect RectangleToCanvas) ToStep() interface{} {
+// toStep convert rect to copy
+func (rect RectangleToCanvas) toStep() interface{} {
 	rectMap := make(map[string]RectangleToCanvas)
 	rectMap["copy_rect_to_canvas"] = rect
 	return rectMap
@@ -435,8 +435,8 @@ type DrawExact struct {
 	Hints interface{} `json:"hints"`
 }
 
-// ToStep convert rect to copy
-func (rect DrawExact) ToStep() interface{} {
+// toStep convert rect to copy
+func (rect DrawExact) toStep() interface{} {
 	rectMap := make(map[string]DrawExact)
 	rectMap["draw_image_exact"] = rect
 	return rectMap
