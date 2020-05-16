@@ -1,4 +1,4 @@
-// +build !windows
+// +build windows
 
 package imageflow
 
@@ -18,7 +18,7 @@ type Job struct {
 
 // AddInput add input to context
 func (job *Job) AddInput(id uint, byt []byte) {
-	C.imageflow_context_add_input_buffer(job.inner, C.int(id), (*C.uchar)(C.CBytes(byt)), C.ulong(len(byt)), C.imageflow_lifetime_lifetime_outlives_function_call)
+	C.imageflow_context_add_input_buffer(job.inner, C.int(id), (*C.uchar)(C.CBytes(byt)), C.ulonglong(len(byt)), C.imageflow_lifetime_lifetime_outlives_function_call)
 }
 
 // AddOutput add output to context
@@ -29,7 +29,7 @@ func (job *Job) AddOutput(id uint) {
 
 // Message execute a command
 func (job *Job) Message(message []byte) {
-	C.imageflow_context_send_json(job.inner, C.CString("v1/execute"), (*C.uchar)(C.CBytes(message)), C.ulong(len(message)))
+	C.imageflow_context_send_json(job.inner, C.CString("v1/execute"), (*C.uchar)(C.CBytes(message)), C.ulonglong(len(message)))
 }
 
 // New Create a context
@@ -42,7 +42,7 @@ func New() Job {
 func (job *Job) GetOutput(id uint) []byte {
 	ptr := (*C.uchar)(C.malloc(C.size_t(unsafe.Sizeof(uintptr(0)))))
 	l := 0
-	le := (*C.ulong)(unsafe.Pointer(&l))
+	le := (*C.ulonglong)(unsafe.Pointer(&l))
 	C.imageflow_context_get_output_buffer_by_id(job.inner, C.int(id), (&ptr), le)
 	return C.GoBytes((unsafe.Pointer)(ptr), C.int(l))
 }
