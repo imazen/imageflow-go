@@ -28,7 +28,6 @@ func (job Job) CheckError() bool {
 	}
 	val := C.imageflow_context_has_error(job.inner)
 	if val == C.bool(true) {
-		job.inner = nil
 		job.err = true
 		return true
 	}
