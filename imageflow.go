@@ -162,35 +162,35 @@ func (steps *Steps) Encode(task ioOperation, preset Preset) *Steps {
 
 // Rotate90 is to used to rotate by 90 degrees
 func (steps *Steps) Rotate90() *Steps {
-	rotate := Rotate90{}
+	rotate := rotate90{}
 	steps.input(rotate.toStep())
 	return steps
 }
 
 // Rotate180 is to used to rotate by 180 degrees
 func (steps *Steps) Rotate180() *Steps {
-	rotate := Rotate180{}
+	rotate := rotate180{}
 	steps.input(rotate.toStep())
 	return steps
 }
 
 // Rotate270 is to used to rotate by 270 degrees
 func (steps *Steps) Rotate270() *Steps {
-	rotate := Rotate180{}
+	rotate := rotate270{}
 	steps.input(rotate.toStep())
 	return steps
 }
 
 // FlipH is to used to flip image horizontally
 func (steps *Steps) FlipH() *Steps {
-	rotate := FlipH{}
+	rotate := flipH{}
 	steps.input(rotate.toStep())
 	return steps
 }
 
 // FlipV is to used to flip image horizontally
 func (steps *Steps) FlipV() *Steps {
-	rotate := FlipV{}
+	rotate := flipV{}
 	steps.input(rotate.toStep())
 	return steps
 }
@@ -291,13 +291,13 @@ func (steps *Steps) RegionPercentage(region RegionPercentage) *Steps {
 
 // CropWhitespace is used to remove whitespace around the image
 func (steps *Steps) CropWhitespace(threshold int, padding float64) *Steps {
-	steps.input(CropWhitespace{Threshold: threshold, PercentagePadding: padding}.toStep())
+	steps.input(cropWhitespace{Threshold: threshold, PercentagePadding: padding}.toStep())
 	return steps
 }
 
 // FillRect is used create a rectangle on the image
 func (steps *Steps) FillRect(x1 float64, y1 float64, x2 float64, y2 float64, color Color) *Steps {
-	steps.input(FillRect{X1: x1, Y1: y1, X2: x2, Y2: y2, Color: color}.toStep())
+	steps.input(fillRect{X1: x1, Y1: y1, X2: x2, Y2: y2, Color: color}.toStep())
 	return steps
 }
 
@@ -311,7 +311,7 @@ func (steps *Steps) ExpandCanvas(canvas ExpandCanvas) *Steps {
 func (steps *Steps) Watermark(data ioOperation, gravity interface{}, fitMode string, fitBox FitBox, opacity float32, hint interface{}) *Steps {
 	data.setIo(uint(steps.ioID))
 	steps.inputs = append(steps.inputs, data)
-	steps.input(Watermark{
+	steps.input(watermark{
 		IoID:    uint(steps.ioID),
 		Gravity: gravity,
 		FitMode: fitMode,

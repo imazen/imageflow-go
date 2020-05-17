@@ -126,8 +126,8 @@ type ConstraintGravity struct {
 	Y float64 `json:"y"`
 }
 
-// ToGravity is used to convert to gravity
-func (gravity ConstraintGravity) ToGravity() interface{} {
+// toGravity is used to convert to gravity
+func (gravity ConstraintGravity) toGravity() interface{} {
 	gravityMap := make(map[string]ConstraintGravity)
 	gravityMap["percentage"] = gravity
 	return gravityMap
@@ -135,22 +135,22 @@ func (gravity ConstraintGravity) ToGravity() interface{} {
 
 // Color must be implemented by all the Colors that can be used by imageflow
 type Color interface {
-	ToColor() interface{}
+	toColor() interface{}
 }
 
 // Black is the Implementation of interface Color and used as color black
 type Black struct{}
 
-// ToColor is used to convert to black color
-func (black Black) ToColor() interface{} {
+// toColor is used to convert to black color
+func (black Black) toColor() interface{} {
 	return "black"
 }
 
 // Transparent is the Implementation of interface Color and used as color transparent
 type Transparent string
 
-// ToColor is used to convert Transparent to Color
-func (color Transparent) ToColor() string {
+// toColor is used to convert Transparent to Color
+func (color Transparent) toColor() string {
 	return "transparent"
 }
 
@@ -197,13 +197,13 @@ type ConstraintHint struct {
 // toStep Converts the Constraint to a step
 func (step Constrain) toStep() interface{} {
 	if step.Hint.BackgroundColor != nil {
-		step.Hint.BackgroundColor = step.Hint.BackgroundColor.(Color).ToColor()
+		step.Hint.BackgroundColor = step.Hint.BackgroundColor.(Color).toColor()
 	}
 	if step.Gravity != nil {
-		step.Gravity = step.Gravity.(ConstraintGravity).ToGravity()
+		step.Gravity = step.Gravity.(ConstraintGravity).toGravity()
 	}
 	if step.CanvasColor != nil {
-		step.CanvasColor = step.CanvasColor.(Color).ToColor()
+		step.CanvasColor = step.CanvasColor.(Color).toColor()
 	}
 	stepMap := make(map[string]Step)
 	stepMap["constrain"] = step
@@ -222,7 +222,7 @@ type Region struct {
 
 // toStep create a step from Region
 func (region Region) toStep() interface{} {
-	region.BackgroundColor = region.BackgroundColor.(Color).ToColor()
+	region.BackgroundColor = region.BackgroundColor.(Color).toColor()
 	stepMap := make(map[string]Step)
 	stepMap["region"] = region
 	return stepMap
@@ -240,69 +240,69 @@ type RegionPercentage struct {
 
 // toStep create a step from Region
 func (region RegionPercentage) toStep() interface{} {
-	region.BackgroundColor = region.BackgroundColor.(Color).ToColor()
+	region.BackgroundColor = region.BackgroundColor.(Color).toColor()
 	stepMap := make(map[string]Step)
 	stepMap["region_percent"] = region
 	return stepMap
 }
 
-// CropWhitespace remove whitespace at the edges
+// cropWhitespace remove whitespace at the edges
 // Threshold: 1..255 determines how much noise/edges to tolerate before cropping is finalized. 80 is a good starting point.
 // PercentPadding determines how much of the image to restore after cropping to provide some padding. 0.5 (half a percent) is a good starting point.
-type CropWhitespace struct {
+type cropWhitespace struct {
 	Threshold         int     `json:"threshold"`
 	PercentagePadding float64 `json:"percentage_padding"`
 }
 
 // toStep create a step from Region
-func (region CropWhitespace) toStep() interface{} {
+func (region cropWhitespace) toStep() interface{} {
 	stepMap := make(map[string]Step)
 	stepMap["crop_whitespace"] = region
 	return stepMap
 }
 
-// Rotate90 rotate the image by 90 degree
-type Rotate90 struct{}
+// rotate90 rotate the image by 90 degree
+type rotate90 struct{}
 
 // toStep is used to convert the rotate to step
-func (rotate Rotate90) toStep() string {
+func (rotate rotate90) toStep() string {
 	return "rotate_90"
 }
 
-// Rotate180 rotate the image by 90 degree
-type Rotate180 struct{}
+// rotate180 rotate the image by 90 degree
+type rotate180 struct{}
 
 // toStep is used to convert the rotate to step
-func (rotate Rotate180) toStep() string {
+func (rotate rotate180) toStep() string {
 	return "rotate_180"
 }
 
-// Rotate270 rotate the image by 90 degree
-type Rotate270 struct{}
+// rotate270 rotate the image by 90 degree
+type rotate270 struct{}
 
 // toStep is used to convert the rotate to step
-func (rotate Rotate270) toStep() string {
+func (rotate rotate270) toStep() string {
 	return "rotate_270"
 }
 
 // FlipH is used to flip the image horizontally
-type FlipH struct{}
+type flipH struct{}
 
 // FlipV is used to flip the image vertical
-type FlipV struct{}
+type flipV struct{}
 
 // toStep is used to convert the rotate to step
-func (rotate FlipH) toStep() string {
+func (rotate flipH) toStep() string {
 	return "flip_h"
 }
 
 // toStep is used to convert the rotate to step
-func (rotate FlipV) toStep() string {
+func (rotate flipV) toStep() string {
 	return "flip_v"
 }
 
-// FillRect is  used to fill a rectangle
-type FillRect struct {
+// fillRect is  used to fill a rectangle
+type fillRect struct {
 	X1    float64     `json:"x1"`
 	Y1    float64     `json:"y1"`
 	X2    float64     `json:"x2"`
@@ -310,10 +310,10 @@ type FillRect struct {
 	Color interface{} `json:"color"`
 }
 
-// toStep create a step from FillRect
-func (region FillRect) toStep() interface{} {
+// toStep create a step from fillRect
+func (region fillRect) toStep() interface{} {
 	stepMap := make(map[string]Step)
-	region.Color = region.Color.(Color).ToColor()
+	region.Color = region.Color.(Color).toColor()
 	stepMap["fill_rect"] = region
 	return stepMap
 }
@@ -327,16 +327,16 @@ type ExpandCanvas struct {
 	Color  interface{} `json:"color"`
 }
 
-// toStep create a step from FillRect
+// toStep create a step from fillRect
 func (region ExpandCanvas) toStep() interface{} {
 	stepMap := make(map[string]Step)
-	region.Color = region.Color.(Color).ToColor()
+	region.Color = region.Color.(Color).toColor()
 	stepMap["expand_canvas"] = region
 	return stepMap
 }
 
-// Watermark is used to create a watermark
-type Watermark struct {
+// watermark is used to create a watermark
+type watermark struct {
 	IoID    uint        `json:"io_id"`
 	Gravity interface{} `json:"gravity"`
 	FitMode string      `json:"fit_mode"`
@@ -379,7 +379,7 @@ func (percent MarginFitBox) toFitBox() interface{} {
 }
 
 // toStep is used to convert watermark
-func (watermark Watermark) toStep() interface{} {
+func (watermark watermark) toStep() interface{} {
 	if watermark.FitMode == "" {
 		watermark.FitMode = "within"
 	}
@@ -392,7 +392,7 @@ func (watermark Watermark) toStep() interface{} {
 	}
 	stepMap := make(map[string]Step)
 	if watermark.Gravity != nil {
-		watermark.Gravity = watermark.Gravity.(ConstraintGravity).ToGravity()
+		watermark.Gravity = watermark.Gravity.(ConstraintGravity).toGravity()
 	}
 	if watermark.Hints != nil {
 		watermark.Hints = watermark.Hints.(ConstraintHint)
