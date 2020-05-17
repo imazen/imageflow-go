@@ -86,7 +86,7 @@ func (job *Job) GetOutput(id uint) ([]byte, error) {
 // ReadError from context
 func (job *Job) ReadError() error {
 	l := 0
-	le := (*C.ulong)(unsafe.Pointer(&l))
+	le := (*C.ulonglong)(unsafe.Pointer(&l))
 	byt := make([]byte, 512)
 	for !bool(C.imageflow_context_error_write_to_buffer(job.inner, (*C.char)(unsafe.Pointer(&byt[0])), C.ulonglong(len(byt)), le)) {
 		byt = make([]byte, len(byt)*2)

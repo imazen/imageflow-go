@@ -81,7 +81,7 @@ func TestError(t *testing.T) {
 	result, _ := job.GetOutput(1)
 	ioutil.WriteFile("./output.jpg", result, 0644)
 	if err == nil {
-		t.Error("Eror should not be null")
+		t.Error("Error should not be null")
 		t.Fail()
 	}
 }

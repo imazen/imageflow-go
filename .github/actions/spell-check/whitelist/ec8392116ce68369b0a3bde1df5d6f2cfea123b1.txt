@@ -56,5 +56,6 @@ upsampling
 extldflags
 staticlib
 ulonglong
+OID
 
 

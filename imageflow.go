@@ -68,7 +68,7 @@ func (file URL) getIo() uint {
 	return file.iOID
 }
 
-// URL is used to make a http rerquest to get file and use it
+// URL is used to make a http request to get file and use it
 type URL struct {
 	URL  string
 	iOID uint
