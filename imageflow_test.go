@@ -23,7 +23,7 @@ func TestJob(t *testing.T) {
 
 func TestStep(t *testing.T) {
 	step := NewStep()
-	_, errorInStep := step.Decode(&URL{URL: "https://jpeg.org/images/jpeg2000-home.jpg"}).FlipV().Watermark(&File{Filename: "image.jpg"}, nil, "within", PercentageFitBox{
+	_, errorInStep := step.Decode(NewURL("https://jpeg.org/images/jpeg2000-home.jpg")).FlipV().Watermark(NewFile("image.jpg"), nil, "within", PercentageFitBox{
 		X1: 0,
 		Y1: 0,
 		X2: 50,
@@ -36,17 +36,17 @@ func TestStep(t *testing.T) {
 			Y2:              200,
 			BackgroundColor: Black{},
 		}).Branch(func(step *Steps) {
-			step.GrayscaleFlat().Encode(&File{Filename: "gray_small.jpg"}, MozJPEG{})
-		}).Encode(&File{Filename: "small.jpg"}, MozJPEG{})
+			step.GrayscaleFlat().Encode(NewFile("gray_small.jpg"), MozJPEG{})
+		}).Encode(NewFile("small.jpg"), MozJPEG{})
 	}).DrawExact(func(steps *Steps) {
-		steps.Decode(&File{Filename: "image.jpg"})
+		steps.Decode(NewFile("image.jpg"))
 	}, DrawExact{
 		X:     0,
 		Y:     0,
 		W:     100,
 		H:     100,
 		Blend: "overwrite",
-	}).ExpandCanvas(ExpandCanvas{Top: 10, Color: Black{}}).Encode(&File{Filename: "medium.jpg"}, MozJPEG{}).Execute()
+	}).ExpandCanvas(ExpandCanvas{Top: 10, Color: Black{}}).Encode(NewFile("meduim.jpg"), MozJPEG{}).Execute()
 	if errorInStep != nil {
 		t.Error(errorInStep)
 		t.FailNow()
@@ -58,7 +58,7 @@ func BenchmarkSteps(b *testing.B) {
 	data, _ := ioutil.ReadFile("image.jpg")
 	for i := 0; i < b.N; i++ {
 		step := NewStep()
-		step.Decode(&Buffer{Buffer: data}).ConstrainWithinW(400).Branch(func(step *Steps) {
+		step.Decode(NewBuffer(data)).ConstrainWithinW(400).Branch(func(step *Steps) {
 			step.ConstrainWithin(100, 100).Region(Region{
 				X1:              0,
 				Y1:              0,
@@ -82,6 +82,24 @@ func TestError(t *testing.T) {
 	ioutil.WriteFile("./output.jpg", result, 0644)
 	if err == nil {
 		t.Error("Error should not be null")
+		t.Fail()
+	}
+}
+
+func TestIOOperation(t *testing.T) {
+	data, _ := ioutil.ReadFile("image.jpg")
+	step := NewStep()
+	m, _ := step.Decode(NewBuffer(data)).ConstrainWithinW(400).Branch(func(step *Steps) {
+		step.ConstrainWithin(100, 100).Region(Region{
+			X1:              0,
+			Y1:              0,
+			X2:              200,
+			Y2:              200,
+			BackgroundColor: Black{},
+		}).Rotate180().Encode(GetBuffer("key_1"), MozJPEG{})
+	}).Encode(GetBuffer("key_2"), MozJPEG{}).Execute()
+	if m["key_1"] == nil || m["key_2"] == nil {
+		t.Error("Buffer failed")
 		t.Fail()
 	}
 }

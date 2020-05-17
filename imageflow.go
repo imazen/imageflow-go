@@ -3,8 +3,6 @@ package imageflow
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"net/http"
 )
 
 // Steps is the builder for creating a operation
@@ -15,92 +13,6 @@ type Steps struct {
 	last       uint
 	innerGraph graph
 	ioID       int
-}
-
-type ioOperation interface {
-	toBuffer() ([]byte, error)
-	toOutput([]byte, *map[string][]byte) *map[string][]byte
-	setIo(id uint)
-	getIo() uint
-}
-
-func (file File) toBuffer() ([]byte, error) {
-	bytes, errorInRead := ioutil.ReadFile(file.Filename)
-	if errorInRead != nil {
-		return nil, errorInRead
-	}
-	return bytes, nil
-}
-
-func (file File) toOutput(data []byte, m *map[string][]byte) *map[string][]byte {
-	ioutil.WriteFile(file.Filename, data, 0644)
-	return m
-}
-
-func (file *File) setIo(id uint) {
-	file.iOID = id
-}
-
-func (file File) getIo() uint {
-	return file.iOID
-}
-
-func (file URL) toBuffer() ([]byte, error) {
-	bytes, errorInURL := http.Get(file.URL)
-	if errorInURL != nil {
-		return nil, errorInURL
-	}
-	data, errorInRead := ioutil.ReadAll(bytes.Body)
-	if errorInRead != nil {
-		return nil, errorInRead
-	}
-	return data, nil
-}
-
-func (file URL) toOutput(data []byte, m *map[string][]byte) *map[string][]byte {
-	return m
-}
-
-func (file *URL) setIo(id uint) {
-	file.iOID = id
-}
-
-func (file URL) getIo() uint {
-	return file.iOID
-}
-
-// URL is used to make a http request to get file and use it
-type URL struct {
-	URL  string
-	iOID uint
-}
-
-// Buffer is io operation related to []byte
-type Buffer struct {
-	iOID   uint
-	Buffer []byte
-}
-
-func (file Buffer) toBuffer() ([]byte, error) {
-	return file.Buffer, nil
-}
-
-func (file Buffer) toOutput(data []byte, m *map[string][]byte) *map[string][]byte {
-	return m
-}
-
-func (file *Buffer) setIo(id uint) {
-	file.iOID = id
-}
-
-func (file Buffer) getIo() uint {
-	return file.iOID
-}
-
-// File is io operation related to file
-type File struct {
-	iOID     uint
-	Filename string
 }
 
 // Decode is used to import a image
@@ -264,7 +176,7 @@ func (steps *Steps) Execute() (map[string][]byte, error) {
 		if errorInOutput != nil {
 			return nil, errorInOutput
 		}
-		steps.outputs[i].toOutput(data, &bufferMap)
+		bufferMap = steps.outputs[i].toOutput(data, bufferMap)
 	}
 	return bufferMap, nil
 }
