@@ -14,7 +14,7 @@ func (decode Decode) toStep() map[string]interface{} {
 
 // Preset is a interface for encoder used to convert to image
 type Preset interface {
-	ToPreset() interface{}
+	toPreset() interface{}
 }
 
 // Encode is used to convert to a image
@@ -36,8 +36,8 @@ type MozJPEG struct {
 	Progressive bool `json:"progressive"`
 }
 
-// ToPreset is used to convert the MozJPG to a preset
-func (preset MozJPEG) ToPreset() interface{} {
+// toPreset is used to convert the MozJPG to a preset
+func (preset MozJPEG) toPreset() interface{} {
 	presetMap := make(map[string]Preset)
 	if preset.Quality == 0 {
 		preset.Quality = 100
@@ -49,8 +49,8 @@ func (preset MozJPEG) ToPreset() interface{} {
 // GIF is used to encode to gif
 type GIF struct{}
 
-// ToPreset is used to convert the GIF to preset
-func (gif GIF) ToPreset() string {
+// toPreset is used to convert the GIF to preset
+func (gif GIF) toPreset() string {
 	return "gif"
 }
 
@@ -59,8 +59,8 @@ type LosslessPNG struct {
 	MaxDeflate bool `json:"max_deflate"`
 }
 
-// ToPreset is used to LosslessPNG to Preset
-func (preset LosslessPNG) ToPreset() interface{} {
+// toPreset is used to LosslessPNG to Preset
+func (preset LosslessPNG) toPreset() interface{} {
 	presetMap := make(map[string]Preset)
 	presetMap["lodepng"] = preset
 	return presetMap
@@ -74,8 +74,8 @@ type LossyPNG struct {
 	MaximumDeflate bool `json:"maximum_deflate"`
 }
 
-// ToPreset is used to convert LossPNG to preset
-func (preset LossyPNG) ToPreset() interface{} {
+// toPreset is used to convert LossPNG to preset
+func (preset LossyPNG) toPreset() interface{} {
 	presetMap := make(map[string]Preset)
 	presetMap["pngquant"] = preset
 	return presetMap
@@ -86,8 +86,11 @@ type WebP struct {
 	Quality int `json:"quality"`
 }
 
-// ToPreset is used to convert WebP to preset
-func (preset WebP) ToPreset() interface{} {
+// toPreset is used to convert WebP to preset
+func (preset WebP) toPreset() interface{} {
+	if preset.Quality == 0 {
+		preset.Quality = 100
+	}
 	presetMap := make(map[string]Preset)
 	presetMap["webplossy"] = preset
 	return presetMap
@@ -96,8 +99,8 @@ func (preset WebP) ToPreset() interface{} {
 // WebPLossless is used to encode using webplossless encoder
 type WebPLossless struct{}
 
-// ToPreset is used to convert WebPLossless to preset
-func (preset WebPLossless) ToPreset() string {
+// toPreset is used to convert WebPLossless to preset
+func (preset WebPLossless) toPreset() string {
 	return "webplossless"
 }
 

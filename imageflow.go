@@ -1,3 +1,4 @@
+// Package imageflow is a fast image processing library
 package imageflow
 
 import (
@@ -153,7 +154,7 @@ func (steps *Steps) Encode(task ioOperation, preset Preset) *Steps {
 	steps.outputs = append(steps.outputs, task)
 	steps.input(Encode{
 		IoID:   steps.ioID,
-		Preset: preset.ToPreset(),
+		Preset: preset.toPreset(),
 	}.toStep())
 	steps.ioID++
 	return steps
