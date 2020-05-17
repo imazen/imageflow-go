@@ -1,30 +1,30 @@
 package imageflow
 
 // Decode is used to create a decode node in graph
-type Decode struct {
+type decode struct {
 	IoID int `json:"io_id"`
 }
 
 // toStep is used to convert a Decode to step
-func (decode Decode) toStep() map[string]interface{} {
+func (decode decode) toStep() map[string]interface{} {
 	decodeMap := make(map[string]interface{})
 	decodeMap["decode"] = decode
 	return decodeMap
 }
 
 // Preset is a interface for encoder used to convert to image
-type Preset interface {
+type presetInterface interface {
 	toPreset() interface{}
 }
 
 // Encode is used to convert to a image
-type Encode struct {
+type encode struct {
 	IoID   int         `json:"io_id"`
 	Preset interface{} `json:"preset"`
 }
 
 // toStep is used to convert a Encode to step
-func (encode Encode) toStep() interface{} {
+func (encode encode) toStep() interface{} {
 	encodeMap := make(map[string]interface{})
 	encodeMap["encode"] = encode
 	return encodeMap
@@ -38,7 +38,7 @@ type MozJPEG struct {
 
 // toPreset is used to convert the MozJPG to a preset
 func (preset MozJPEG) toPreset() interface{} {
-	presetMap := make(map[string]Preset)
+	presetMap := make(map[string]presetInterface)
 	if preset.Quality == 0 {
 		preset.Quality = 100
 	}
@@ -61,7 +61,7 @@ type LosslessPNG struct {
 
 // toPreset is used to LosslessPNG to Preset
 func (preset LosslessPNG) toPreset() interface{} {
-	presetMap := make(map[string]Preset)
+	presetMap := make(map[string]presetInterface)
 	presetMap["lodepng"] = preset
 	return presetMap
 }
@@ -76,7 +76,7 @@ type LossyPNG struct {
 
 // toPreset is used to convert LossPNG to preset
 func (preset LossyPNG) toPreset() interface{} {
-	presetMap := make(map[string]Preset)
+	presetMap := make(map[string]presetInterface)
 	presetMap["pngquant"] = preset
 	return presetMap
 }
@@ -91,7 +91,7 @@ func (preset WebP) toPreset() interface{} {
 	if preset.Quality == 0 {
 		preset.Quality = 100
 	}
-	presetMap := make(map[string]Preset)
+	presetMap := make(map[string]presetInterface)
 	presetMap["webplossy"] = preset
 	return presetMap
 }
@@ -205,7 +205,7 @@ func (step Constrain) toStep() interface{} {
 	if step.CanvasColor != nil {
 		step.CanvasColor = step.CanvasColor.(Color).toColor()
 	}
-	stepMap := make(map[string]Step)
+	stepMap := make(map[string]stepInterface)
 	stepMap["constrain"] = step
 	return stepMap
 }
@@ -223,7 +223,7 @@ type Region struct {
 // toStep create a step from Region
 func (region Region) toStep() interface{} {
 	region.BackgroundColor = region.BackgroundColor.(Color).toColor()
-	stepMap := make(map[string]Step)
+	stepMap := make(map[string]stepInterface)
 	stepMap["region"] = region
 	return stepMap
 }
@@ -241,7 +241,7 @@ type RegionPercentage struct {
 // toStep create a step from Region
 func (region RegionPercentage) toStep() interface{} {
 	region.BackgroundColor = region.BackgroundColor.(Color).toColor()
-	stepMap := make(map[string]Step)
+	stepMap := make(map[string]stepInterface)
 	stepMap["region_percent"] = region
 	return stepMap
 }
@@ -256,7 +256,7 @@ type cropWhitespace struct {
 
 // toStep create a step from Region
 func (region cropWhitespace) toStep() interface{} {
-	stepMap := make(map[string]Step)
+	stepMap := make(map[string]stepInterface)
 	stepMap["crop_whitespace"] = region
 	return stepMap
 }
@@ -312,7 +312,7 @@ type fillRect struct {
 
 // toStep create a step from fillRect
 func (region fillRect) toStep() interface{} {
-	stepMap := make(map[string]Step)
+	stepMap := make(map[string]stepInterface)
 	region.Color = region.Color.(Color).toColor()
 	stepMap["fill_rect"] = region
 	return stepMap
@@ -329,7 +329,7 @@ type ExpandCanvas struct {
 
 // toStep create a step from fillRect
 func (region ExpandCanvas) toStep() interface{} {
-	stepMap := make(map[string]Step)
+	stepMap := make(map[string]stepInterface)
 	region.Color = region.Color.(Color).toColor()
 	stepMap["expand_canvas"] = region
 	return stepMap
@@ -390,7 +390,7 @@ func (watermark watermark) toStep() interface{} {
 	if watermark.FitBox != nil {
 		watermark.FitBox = watermark.FitBox.(FitBox).toFitBox()
 	}
-	stepMap := make(map[string]Step)
+	stepMap := make(map[string]stepInterface)
 	if watermark.Gravity != nil {
 		watermark.Gravity = watermark.Gravity.(ConstraintGravity).toGravity()
 	}

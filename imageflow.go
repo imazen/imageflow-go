@@ -19,7 +19,7 @@ type Steps struct {
 func (steps *Steps) Decode(task ioOperation) *Steps {
 	steps.inputs = append(steps.inputs, task)
 	task.setIo(uint(steps.ioID))
-	steps.vertex = append(steps.vertex, Decode{
+	steps.vertex = append(steps.vertex, decode{
 		IoID: steps.ioID,
 	}.toStep())
 	steps.ioID++
@@ -61,10 +61,10 @@ func constrainWithinMap(w interface{}, h interface{}) map[string]interface{} {
 }
 
 // Encode is used to convert the image
-func (steps *Steps) Encode(task ioOperation, preset Preset) *Steps {
+func (steps *Steps) Encode(task ioOperation, preset presetInterface) *Steps {
 	task.setIo(uint(steps.ioID))
 	steps.outputs = append(steps.outputs, task)
-	steps.input(Encode{
+	steps.input(encode{
 		IoID:   steps.ioID,
 		Preset: preset.toPreset(),
 	}.toStep())
@@ -113,7 +113,7 @@ func (steps *Steps) input(step interface{}) {
 	steps.last = uint(len(steps.vertex) - 1)
 }
 
-func (steps *Steps) canvas(f func(*Steps), step Step) *Steps {
+func (steps *Steps) canvas(f func(*Steps), step stepInterface) *Steps {
 	last := steps.last
 	f(steps)
 	steps.vertex = append(steps.vertex, step.toStep())
@@ -322,7 +322,7 @@ func (steps *Steps) colorFilterSRGBValue(name string, value float32) *Steps {
 }
 
 // Step specify different nodes
-type Step interface {
+type stepInterface interface {
 	toStep() interface{}
 }
 
