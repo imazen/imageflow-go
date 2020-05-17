@@ -46,7 +46,7 @@ func TestStep(t *testing.T) {
 		W:     100,
 		H:     100,
 		Blend: "overwrite",
-	}).ExpandCanvas(ExpandCanvas{Top: 10, Color: Black{}}).Encode(NewFile("meduim.jpg"), MozJPEG{}).Execute()
+	}).ExpandCanvas(ExpandCanvas{Top: 10, Color: Black{}}).Encode(NewFile("medium.jpg"), MozJPEG{}).Execute()
 	if errorInStep != nil {
 		t.Error(errorInStep)
 		t.FailNow()
