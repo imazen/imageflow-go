@@ -12,14 +12,14 @@ import (
 	"unsafe"
 )
 
-// Job to perform a task in imageflow
-type Job struct {
+// job to perform a task in imageflow
+type job struct {
 	inner *C.struct_imageflow_context
 	err   bool
 }
 
 // CheckError is used to check if the context has error or not
-func (job Job) CheckError() bool {
+func (job job) CheckError() bool {
 	if job.err {
 		return true
 	}
@@ -35,7 +35,7 @@ func (job Job) CheckError() bool {
 }
 
 // AddInput add input to context
-func (job *Job) AddInput(id uint, byt []byte) error {
+func (job *job) AddInput(id uint, byt []byte) error {
 	if job.CheckError() {
 		return job.ReadError()
 	}
@@ -47,7 +47,7 @@ func (job *Job) AddInput(id uint, byt []byte) error {
 }
 
 // AddOutput add output to context
-func (job *Job) AddOutput(id uint) error {
+func (job *job) AddOutput(id uint) error {
 	result := C.imageflow_context_add_output_buffer(job.inner, C.int(id))
 
 	if !bool(result) {
@@ -58,7 +58,7 @@ func (job *Job) AddOutput(id uint) error {
 }
 
 // Message execute a command
-func (job *Job) Message(message []byte) error {
+func (job *job) Message(message []byte) error {
 	C.imageflow_context_send_json(job.inner, C.CString("v1/execute"), (*C.uchar)(C.CBytes(message)), C.ulonglong(len(message)))
 	if job.CheckError() {
 		return job.ReadError()
@@ -67,13 +67,13 @@ func (job *Job) Message(message []byte) error {
 }
 
 // New Create a context
-func New() Job {
+func newJob() job {
 	v := C.imageflow_context_create(3, 0)
-	return Job{inner: v}
+	return job{inner: v}
 }
 
 // GetOutput from the context
-func (job *Job) GetOutput(id uint) ([]byte, error) {
+func (job *job) GetOutput(id uint) ([]byte, error) {
 	if job.CheckError() {
 		return nil, job.ReadError()
 	}
@@ -90,7 +90,7 @@ func (job *Job) GetOutput(id uint) ([]byte, error) {
 }
 
 // ReadError from context
-func (job *Job) ReadError() error {
+func (job *job) ReadError() error {
 	l := 0
 	le := (*C.ulonglong)(unsafe.Pointer(&l))
 	byt := make([]byte, 512)

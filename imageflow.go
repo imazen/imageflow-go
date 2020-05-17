@@ -235,7 +235,7 @@ func (steps *Steps) Execute() (map[string][]byte, error) {
 	frameWise["graph"] = graphMap
 	jsonMap["framewise"] = frameWise
 	js, _ := json.Marshal(jsonMap)
-	job := New()
+	job := newJob()
 	for i := 0; i < len(steps.inputs); i++ {
 		data, errorInBuffer := steps.inputs[i].toBuffer()
 		if errorInBuffer != nil {

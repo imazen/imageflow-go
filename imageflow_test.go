@@ -6,7 +6,7 @@ import (
 )
 
 func TestJob(t *testing.T) {
-	job := New()
+	job := newJob()
 	data, _ := ioutil.ReadFile("image.jpg")
 	command := []byte("{\"io\":[{\"io_id\":0,\"direction\":\"in\",\"io\":\"placeholder\"},{\"io_id\":1,\"direction\":\"out\",\"io\":\"placeholder\"}],\"framewise\":{\"steps\":[{\"decode\":{\"io_id\":0}},{\"constrain\":{\"mode\":\"within\",\"w\":400}},\"rotate_90\",{\"encode\":{\"io_id\":1,\"preset\":{\"pngquant\":{\"quality\":80}}}}]}}")
 
@@ -71,7 +71,7 @@ func BenchmarkSteps(b *testing.B) {
 }
 
 func TestError(t *testing.T) {
-	job := New()
+	job := newJob()
 	data, _ := ioutil.ReadFile("image.jpg")
 	command := []byte("\"io\":[{\"io_id\":0,\"direction\":\"in\",\"io\":\"placeholder\"},{\"io_id\":1,\"direction\":\"out\",\"io\":\"placeholder\"}],\"framewise\":{\"steps\":[{\"decode\":{\"io_id\":0}},{\"constrain\":{\"mode\":\"within\",\"w\":400}},\"rotate_90\",{\"encode\":{\"io_id\":1,\"preset\":{\"pngquant\":{\"quality\":80}}}}]}}")
 
