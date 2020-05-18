@@ -316,6 +316,24 @@ func (steps *Steps) Saturation(value float32) *Steps {
 	return steps.colorFilterSRGBValue("saturation", value)
 }
 
+// PNG encodes to a png
+func (steps *Steps) PNG(operation ioOperation) *Steps {
+	return steps.Encode(operation, LosslessPNG{})
+
+}
+
+// JPEG encodes to a jpeg
+func (steps *Steps) JPEG(operation ioOperation) *Steps {
+	return steps.Encode(operation, MozJPEG{})
+
+}
+
+// WebP encodes to a webp
+func (steps *Steps) WebP(operation ioOperation) *Steps {
+	return steps.Encode(operation, WebPLossless{})
+
+}
+
 func (steps *Steps) colorFilterSRGBValue(name string, value float32) *Steps {
 	steps.input(doubleMap("color_filter_srgb", name, value))
 	return steps

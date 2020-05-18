@@ -100,7 +100,7 @@ func (preset WebP) toPreset() interface{} {
 type WebPLossless struct{}
 
 // toPreset is used to convert WebPLossless to preset
-func (preset WebPLossless) toPreset() string {
+func (preset WebPLossless) toPreset() interface{} {
 	return "webplossless"
 }
 
