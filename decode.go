@@ -50,7 +50,7 @@ func (preset MozJPEG) toPreset() interface{} {
 type GIF struct{}
 
 // toPreset is used to convert the GIF to preset
-func (gif GIF) toPreset() string {
+func (gif GIF) toPreset() interface{} {
 	return "gif"
 }
 

@@ -334,6 +334,12 @@ func (steps *Steps) WebP(operation ioOperation) *Steps {
 
 }
 
+// GIF encodes to a gif
+func (steps *Steps) GIF(operation ioOperation) *Steps {
+	return steps.Encode(operation, GIF{})
+
+}
+
 func (steps *Steps) colorFilterSRGBValue(name string, value float32) *Steps {
 	steps.input(doubleMap("color_filter_srgb", name, value))
 	return steps
