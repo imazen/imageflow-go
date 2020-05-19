@@ -40,7 +40,7 @@ type MozJPEG struct {
 func (preset MozJPEG) toPreset() interface{} {
 	presetMap := make(map[string]presetInterface)
 	if preset.Quality == 0 {
-		preset.Quality = 100
+		preset.Quality = 90
 	}
 	presetMap["mozjpeg"] = preset
 	return presetMap
