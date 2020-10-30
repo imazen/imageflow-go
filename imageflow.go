@@ -60,6 +60,12 @@ func constrainWithinMap(w interface{}, h interface{}) map[string]interface{} {
 	return constrainMap
 }
 
+// Constrain is used to constraint a image
+func (steps *Steps) Constrain(dataMap Constrain) *Steps {
+	steps.input(dataMap.toStep())
+	return steps
+}
+
 // Encode is used to convert the image
 func (steps *Steps) Encode(task ioOperation, preset presetInterface) *Steps {
 	task.setIo(uint(steps.ioID))
