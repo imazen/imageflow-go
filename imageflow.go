@@ -141,18 +141,7 @@ func (steps *Steps) DrawExact(f func(steps *Steps), rect DrawExact) *Steps {
 
 // Execute the graph
 func (steps *Steps) Execute() (map[string][]byte, error) {
-	jsonMap := make(map[string]interface{})
-	graphMap := make(map[string]interface{})
-	nodeMap := make(map[int]interface{})
-	for i := 0; i < len(steps.vertex); i++ {
-		nodeMap[i] = steps.vertex[i]
-	}
-	frameWise := make(map[string]interface{})
-	graphMap["nodes"] = nodeMap
-	graphMap["edges"] = steps.innerGraph.edges
-	frameWise["graph"] = graphMap
-	jsonMap["framewise"] = frameWise
-	js, _ := json.Marshal(jsonMap)
+	js := steps.ToJSON()
 	job := newJob()
 	for i := 0; i < len(steps.inputs); i++ {
 		data, errorInBuffer := steps.inputs[i].toBuffer()
@@ -234,6 +223,8 @@ func (steps *Steps) Watermark(data ioOperation, gravity interface{}, fitMode str
 		Gravity: gravity,
 		FitMode: fitMode,
 		FitBox:  fitBox,
+		Opacity: opacity,
+		Hints:   hint,
 	}.toStep())
 	steps.ioID++
 	return steps
@@ -379,4 +370,16 @@ func NewStep() Steps {
 			edges: []edge{},
 		},
 	}
+}
+
+func (steps *Steps) ToJSON() []byte {
+	nodeMap := make(map[int]interface{})
+	for i := 0; i < len(steps.vertex); i++ {
+		nodeMap[i] = steps.vertex[i]
+	}
+	jsonMap := map[string]interface{}{"framewise": map[string]interface{}{
+		"graph": map[string]interface{}{"nodes": nodeMap, "edges": steps.innerGraph.edges},
+	}}
+	js, _ := json.Marshal(jsonMap)
+	return js
 }

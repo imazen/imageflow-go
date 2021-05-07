@@ -103,3 +103,16 @@ func TestIOOperation(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestSteps_Watermark(t *testing.T) {
+	step := NewStep()
+	data, _ := ioutil.ReadFile("image.jpg")
+	m, _ := step.Decode(NewBuffer(data)).Watermark(NewBuffer(data), ConstraintGravity{
+		X: 100,
+		Y: 100,
+	}, "", nil, .5, nil).Encode(GetBuffer("key_1"), MozJPEG{}).Execute()
+	if m["key_1"] == nil {
+		t.Error("Buffer failed")
+		t.Fail()
+	}
+}
