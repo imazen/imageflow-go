@@ -5,6 +5,7 @@ package imageflow
 /*
 #cgo LDFLAGS: -L./ -limageflow
 #include "imageflow.h"
+#include <stdlib.h>
 */
 import "C"
 import (
@@ -14,8 +15,9 @@ import (
 
 // job to perform a task in imageflow
 type job struct {
-	inner *C.struct_imageflow_context
-	err   bool
+	inner  *C.struct_imageflow_context
+	allocs []unsafe.Pointer
+	err    bool
 }
 
 // CheckError is used to check if the context has error or not
@@ -35,11 +37,17 @@ func (job job) CheckError() bool {
 }
 
 // AddInput add input to context
-func (job *job) AddInput(id uint, byt []byte) error {
+func (job *job) AddInput(id uint, b []byte) error {
 	if job.CheckError() {
 		return job.ReadError()
 	}
-	result := C.imageflow_context_add_input_buffer(job.inner, C.int(id), (*C.uchar)(C.CBytes(byt)), C.ulong(len(byt)), C.imageflow_lifetime_lifetime_outlives_function_call)
+
+	cb := C.CBytes(b)
+	job.allocs = append(job.allocs, cb)
+
+	result := C.imageflow_context_add_input_buffer(job.inner, C.int(id),
+		(*C.uchar)(cb), C.ulong(len(b)), C.imageflow_lifetime_lifetime_outlives_function_call)
+
 	if !bool(result) {
 		return job.ReadError()
 	}
@@ -65,7 +73,17 @@ func (job *job) Message(message []byte) error {
 	if job.CheckError() {
 		return job.ReadError()
 	}
-	C.imageflow_context_send_json(job.inner, C.CString("v1/execute"), (*C.uchar)(C.CBytes(message)), C.ulong(len(message)))
+	jsize := C.ulong(len(message))
+
+	cs := C.CString("v1/execute")
+	cs_ptr := unsafe.Pointer(cs)
+
+	cb := C.CBytes(message)
+	cb_ptr := (*C.uchar)(cb)
+
+	job.allocs = append(job.allocs, cb, cs_ptr)
+
+	C.imageflow_context_send_json(job.inner, cs, cb_ptr, jsize)
 	if job.CheckError() {
 		return job.ReadError()
 	}
@@ -78,21 +96,36 @@ func newJob() job {
 	return job{inner: v}
 }
 
+// Frees the context and C allocations.
+func (j *job) CleanUp() {
+	C.imageflow_context_destroy(j.inner)
+	for _, alloc := range j.allocs {
+		C.free(alloc)
+	}
+}
+
 // GetOutput from the context
 func (job *job) GetOutput(id uint) ([]byte, error) {
 	if job.CheckError() {
 		return nil, job.ReadError()
 	}
 
-	ptr := (*C.uchar)(C.malloc(C.size_t(unsafe.Sizeof(uintptr(0)))))
-	l := 0
-	le := (*C.ulong)(unsafe.Pointer(&l))
-	result := C.imageflow_context_get_output_buffer_by_id(job.inner, C.int(id), (&ptr), le)
+	size := C.size_t(unsafe.Sizeof(uintptr(0)))
+	cb := C.malloc(size) // cbytes
+	cb_ptr := (*C.uchar)(cb)
+	defer C.free(cb)
+
+	length := 0
+	length_ptr := (*C.ulong)(unsafe.Pointer(&length))
+
+	result := C.imageflow_context_get_output_buffer_by_id(
+		job.inner, C.int(id),
+		(&cb_ptr), length_ptr)
 
 	if !bool(result) {
 		return nil, job.ReadError()
 	}
-	return C.GoBytes((unsafe.Pointer)(ptr), C.int(l)), nil
+	return C.GoBytes((unsafe.Pointer)(cb_ptr), C.int(length)), nil
 }
 
 // ReadError from the context
