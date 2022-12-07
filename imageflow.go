@@ -143,6 +143,8 @@ func (steps *Steps) DrawExact(f func(steps *Steps), rect DrawExact) *Steps {
 func (steps *Steps) Execute() (map[string][]byte, error) {
 	js := steps.ToJSON()
 	job := newJob()
+	defer job.CleanUp()
+
 	for i := 0; i < len(steps.inputs); i++ {
 		data, errorInBuffer := steps.inputs[i].toBuffer()
 		if errorInBuffer != nil {
