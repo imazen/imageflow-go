@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package imageflow
@@ -5,6 +6,7 @@ package imageflow
 /*
 #cgo LDFLAGS: -L./ -limageflow
 #include "imageflow.h"
+#include <stdlib.h>
 */
 import "C"
 import (
@@ -87,6 +89,11 @@ func (job *job) GetOutput(id uint) ([]byte, error) {
 		return nil, job.ReadError()
 	}
 	return C.GoBytes((unsafe.Pointer)(ptr), C.int(l)), nil
+}
+
+// Frees the context and C allocations.
+func (j *job) CleanUp() {
+	C.imageflow_context_destroy(j.inner)
 }
 
 // ReadError from context
