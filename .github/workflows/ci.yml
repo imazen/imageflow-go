@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x64
+            runner: ubuntu-24.04
+            asset: imageflow-v2.3.0-rc01-2d210905-linux-x64.tar.gz
+
+          - name: linux-arm64
+            runner: ubuntu-24.04-arm
+            asset: imageflow-v2.3.0-rc01-2d210905-linux-arm64.tar.gz
+
+          - name: linux-musl-x64 (static)
+            runner: ubuntu-24.04
+            asset: staticlib-v2.3.0-rc01-2d210905-linux-musl-x64.staticlib-libimageflow.a.tar.gz
+
+          - name: linux-musl-arm64 (static)
+            runner: ubuntu-24.04-arm
+            asset: staticlib-v2.3.0-rc01-2d210905-linux-musl-arm64.staticlib-libimageflow.a.tar.gz
+
+          - name: macOS-arm64
+            runner: macos-latest
+            asset: imageflow-v2.3.0-rc01-2d210905-osx-arm64.tar.gz
+
+          - name: macOS-x86_64
+            runner: macos-13
+            asset: imageflow-v2.3.0-rc01-2d210905-osx-x86_64.tar.gz
+
+          - name: windows-x86_64
+            runner: windows-latest
+            asset: imageflow-v2.3.0-rc01-2d210905-win-x86_64.zip
+
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - uses: actions/checkout@v4
+
+      - name: Download libimageflow
+        shell: bash
+        run: |
+          URL="https://github.com/imazen/imageflow/releases/download/v2.3.0-rc01/${{ matrix.asset }}"
+          if [[ "${{ matrix.asset }}" == *.zip ]]; then
+            curl -sL "$URL" -o asset.zip && unzip -o asset.zip
+          else
+            curl -sL "$URL" | tar xz
+          fi
+
+      - name: Download test image
+        shell: bash
+        run: curl -sL https://jpeg.org/images/jpeg2000-home.jpg -o image.jpg
+
+      - name: Test
+        shell: bash
+        env:
+          LD_LIBRARY_PATH: .
+          DYLD_LIBRARY_PATH: .
+        run: go test -v

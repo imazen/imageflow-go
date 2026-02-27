@@ -1,7 +1,9 @@
 package imageflow
 
 /*
-#cgo LDFLAGS: -L./ -limageflow
+#cgo linux LDFLAGS: -L./ -limageflow -lm -ldl -lpthread
+#cgo darwin LDFLAGS: -L./ -limageflow
+#cgo windows LDFLAGS: -L./ -limageflow
 #include "imageflow.h"
 #include <stdlib.h>
 */
