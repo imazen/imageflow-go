@@ -1,3 +1,3 @@
 module github.com/imazen/imageflow-go
 
-go 1.14
+go 1.22

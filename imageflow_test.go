@@ -1,20 +1,25 @@
 package imageflow
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
 func TestJob(t *testing.T) {
-	job := newJob()
-	data, _ := ioutil.ReadFile("image.jpg")
+	job, err := newJob()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer job.CleanUp()
+
+	data, _ := os.ReadFile("image.jpg")
 	command := []byte("{\"io\":[{\"io_id\":0,\"direction\":\"in\",\"io\":\"placeholder\"},{\"io_id\":1,\"direction\":\"out\",\"io\":\"placeholder\"}],\"framewise\":{\"steps\":[{\"decode\":{\"io_id\":0}},{\"constrain\":{\"mode\":\"within\",\"w\":400}},\"rotate_90\",{\"encode\":{\"io_id\":1,\"preset\":{\"pngquant\":{\"quality\":80}}}}]}}")
 
 	job.AddInput(0, data)
 	job.AddOutput(1)
-	err := job.Message(command)
+	err = job.Message(command)
 	result, _ := job.GetOutput(1)
-	ioutil.WriteFile("./output.jpg", result, 0644)
+	os.WriteFile("./output.jpg", result, 0644)
 	if err != nil {
 		t.Error(err)
 		t.Fail()
@@ -55,7 +60,7 @@ func TestStep(t *testing.T) {
 }
 
 func BenchmarkSteps(b *testing.B) {
-	data, _ := ioutil.ReadFile("image.jpg")
+	data, _ := os.ReadFile("image.jpg")
 	for i := 0; i < b.N; i++ {
 		step := NewStep()
 		step.Decode(NewBuffer(data)).ConstrainWithinW(400).Branch(func(step *Steps) {
@@ -71,15 +76,20 @@ func BenchmarkSteps(b *testing.B) {
 }
 
 func TestError(t *testing.T) {
-	job := newJob()
-	data, _ := ioutil.ReadFile("image.jpg")
+	job, err := newJob()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer job.CleanUp()
+
+	data, _ := os.ReadFile("image.jpg")
 	command := []byte("\"io\":[{\"io_id\":0,\"direction\":\"in\",\"io\":\"placeholder\"},{\"io_id\":1,\"direction\":\"out\",\"io\":\"placeholder\"}],\"framewise\":{\"steps\":[{\"decode\":{\"io_id\":0}},{\"constrain\":{\"mode\":\"within\",\"w\":400}},\"rotate_90\",{\"encode\":{\"io_id\":1,\"preset\":{\"pngquant\":{\"quality\":80}}}}]}}")
 
 	job.AddInput(0, data)
 	job.AddOutput(1)
-	err := job.Message(command)
+	err = job.Message(command)
 	result, _ := job.GetOutput(1)
-	ioutil.WriteFile("./output.jpg", result, 0644)
+	os.WriteFile("./output.jpg", result, 0644)
 	if err == nil {
 		t.Error("Error should not be null")
 		t.Fail()
@@ -87,7 +97,7 @@ func TestError(t *testing.T) {
 }
 
 func TestIOOperation(t *testing.T) {
-	data, _ := ioutil.ReadFile("image.jpg")
+	data, _ := os.ReadFile("image.jpg")
 	step := NewStep()
 	m, _ := step.Decode(NewBuffer(data)).ConstrainWithinW(400).Branch(func(step *Steps) {
 		step.ConstrainWithin(100, 100).Region(Region{
@@ -106,7 +116,7 @@ func TestIOOperation(t *testing.T) {
 
 func TestSteps_Watermark(t *testing.T) {
 	step := NewStep()
-	data, _ := ioutil.ReadFile("image.jpg")
+	data, _ := os.ReadFile("image.jpg")
 	m, _ := step.Decode(NewBuffer(data)).Watermark(NewBuffer(data), ConstraintGravity{
 		X: 100,
 		Y: 100,

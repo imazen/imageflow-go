@@ -11,20 +11,23 @@ jobs:
     name: Build
     runs-on: windows-latest
     steps:
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.14
-        id: go
+          go-version: '1.22'
 
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+      - name: Check out code
+        uses: actions/checkout@v4
 
-      - name: Download staticlib
-        run: curl -L https://github.com/anshulrgoyal/imageflow/releases/download/v1.4.0-rc40/imageflow.zip > imageflow.dll
+      - name: Download libimageflow DLL
         shell: bash
-      - name: Download Image
-        run: curl -L https://jpeg.org/images/jpeg2000-home.jpg > image.jpg
+        run: |
+          curl -sL https://github.com/imazen/imageflow/releases/download/v2.3.0-rc01/imageflow-v2.3.0-rc01-win-x86_64.zip -o imageflow.zip
+          unzip imageflow.zip
+
+      - name: Download test image
         shell: bash
+        run: curl -sL https://jpeg.org/images/jpeg2000-home.jpg > image.jpg
+
       - name: Test
         run: go test -ldflags="-r ." -v

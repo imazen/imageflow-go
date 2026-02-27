@@ -1,5 +1,3 @@
-// +build !windows
-
 package imageflow
 
 /*
@@ -10,18 +8,18 @@ package imageflow
 import "C"
 import (
 	"errors"
+	"fmt"
 	"unsafe"
 )
 
 // job to perform a task in imageflow
 type job struct {
-	inner  *C.struct_imageflow_context
-	allocs []unsafe.Pointer
-	err    bool
+	inner *C.struct_imageflow_context
+	err   bool
 }
 
 // CheckError is used to check if the context has error or not
-func (job job) CheckError() bool {
+func (job *job) CheckError() bool {
 	if job.err {
 		return true
 	}
@@ -43,10 +41,10 @@ func (job *job) AddInput(id uint, b []byte) error {
 	}
 
 	cb := C.CBytes(b)
-	job.allocs = append(job.allocs, cb)
+	defer C.free(cb)
 
 	result := C.imageflow_context_add_input_buffer(job.inner, C.int(id),
-		(*C.uchar)(cb), C.ulong(len(b)), C.imageflow_lifetime_lifetime_outlives_function_call)
+		(*C.uchar)(cb), C.size_t(len(b)), C.imageflow_lifetime_lifetime_outlives_function_call)
 
 	if !bool(result) {
 		return job.ReadError()
@@ -73,34 +71,38 @@ func (job *job) Message(message []byte) error {
 	if job.CheckError() {
 		return job.ReadError()
 	}
-	jsize := C.ulong(len(message))
 
 	cs := C.CString("v1/execute")
-	cs_ptr := unsafe.Pointer(cs)
+	defer C.free(unsafe.Pointer(cs))
 
 	cb := C.CBytes(message)
-	cb_ptr := (*C.uchar)(cb)
+	defer C.free(cb)
 
-	job.allocs = append(job.allocs, cb, cs_ptr)
-
-	C.imageflow_context_send_json(job.inner, cs, cb_ptr, jsize)
+	C.imageflow_context_send_json(job.inner, cs, (*C.uchar)(cb), C.size_t(len(message)))
 	if job.CheckError() {
 		return job.ReadError()
 	}
 	return nil
 }
 
-// New Create a context
-func newJob() job {
-	v := C.imageflow_context_create(3, 0)
-	return job{inner: v}
+// newJob creates a context after verifying ABI compatibility
+func newJob() (*job, error) {
+	if !bool(C.imageflow_abi_compatible(C.IMAGEFLOW_ABI_VER_MAJOR, C.IMAGEFLOW_ABI_VER_MINOR)) {
+		return nil, fmt.Errorf("imageflow ABI mismatch: header wants %d.%d",
+			C.IMAGEFLOW_ABI_VER_MAJOR, C.IMAGEFLOW_ABI_VER_MINOR)
+	}
+	v := C.imageflow_context_create(C.IMAGEFLOW_ABI_VER_MAJOR, C.IMAGEFLOW_ABI_VER_MINOR)
+	if v == nil {
+		return nil, errors.New("imageflow_context_create returned nil")
+	}
+	return &job{inner: v}, nil
 }
 
-// Frees the context and C allocations.
+// CleanUp frees the context.
 func (j *job) CleanUp() {
-	C.imageflow_context_destroy(j.inner)
-	for _, alloc := range j.allocs {
-		C.free(alloc)
+	if j.inner != nil {
+		C.imageflow_context_destroy(j.inner)
+		j.inner = nil
 	}
 }
 
@@ -110,31 +112,25 @@ func (job *job) GetOutput(id uint) ([]byte, error) {
 		return nil, job.ReadError()
 	}
 
-	size := C.size_t(unsafe.Sizeof(uintptr(0)))
-	cb := C.malloc(size) // cbytes
-	cb_ptr := (*C.uchar)(cb)
-	defer C.free(cb)
-
-	length := 0
-	length_ptr := (*C.ulong)(unsafe.Pointer(&length))
+	var bufPtr *C.uint8_t
+	var bufLen C.size_t
 
 	result := C.imageflow_context_get_output_buffer_by_id(
 		job.inner, C.int(id),
-		(&cb_ptr), length_ptr)
+		&bufPtr, &bufLen)
 
 	if !bool(result) {
 		return nil, job.ReadError()
 	}
-	return C.GoBytes((unsafe.Pointer)(cb_ptr), C.int(length)), nil
+	return C.GoBytes(unsafe.Pointer(bufPtr), C.int(bufLen)), nil
 }
 
 // ReadError from the context
 func (job *job) ReadError() error {
-	l := 0
-	le := (*C.ulong)(unsafe.Pointer(&l))
+	var written C.size_t
 	byt := make([]byte, 512)
-	for !bool(C.imageflow_context_error_write_to_buffer(job.inner, (*C.char)(unsafe.Pointer(&byt[0])), C.ulong(len(byt)), le)) {
+	for !bool(C.imageflow_context_error_write_to_buffer(job.inner, (*C.char)(unsafe.Pointer(&byt[0])), C.size_t(len(byt)), &written)) {
 		byt = make([]byte, len(byt)*2)
 	}
-	return errors.New(string(byt[0 : l-1]))
+	return errors.New(string(byt[0:written]))
 }

@@ -142,7 +142,10 @@ func (steps *Steps) DrawExact(f func(steps *Steps), rect DrawExact) *Steps {
 // Execute the graph
 func (steps *Steps) Execute() (map[string][]byte, error) {
 	js := steps.ToJSON()
-	job := newJob()
+	job, err := newJob()
+	if err != nil {
+		return nil, err
+	}
 	defer job.CleanUp()
 
 	for i := 0; i < len(steps.inputs); i++ {
@@ -173,7 +176,10 @@ func (steps *Steps) Execute() (map[string][]byte, error) {
 		if errorInOutput != nil {
 			return nil, errorInOutput
 		}
-		bufferMap = steps.outputs[i].toOutput(data, bufferMap)
+		bufferMap, err = steps.outputs[i].toOutput(data, bufferMap)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return bufferMap, nil
 }
