@@ -150,7 +150,7 @@ func (black Black) toColor() interface{} {
 type Transparent string
 
 // toColor is used to convert Transparent to Color
-func (color Transparent) toColor() string {
+func (color Transparent) toColor() interface{} {
 	return "transparent"
 }
 
@@ -251,7 +251,7 @@ func (region RegionPercentage) toStep() interface{} {
 // PercentPadding determines how much of the image to restore after cropping to provide some padding. 0.5 (half a percent) is a good starting point.
 type cropWhitespace struct {
 	Threshold         int     `json:"threshold"`
-	PercentagePadding float64 `json:"percentage_padding"`
+	PercentagePadding float64 `json:"percent_padding"`
 }
 
 // toStep create a step from Region

@@ -18,7 +18,7 @@ Tested in CI against libimageflow v2.3.0-rc01:
 | Linux x86_64 (musl) | `libimageflow.a` (static) | `ubuntu-24.04` |
 | Linux ARM64 (musl) | `libimageflow.a` (static) | `ubuntu-24.04-arm` |
 | macOS ARM64 | `libimageflow.dylib` | `macos-latest` |
-| macOS x86_64 | `libimageflow.dylib` | `macos-13` |
+| macOS x86_64 | `libimageflow.dylib` | `macos-15-intel` |
 | Windows x86_64 | `imageflow.dll` | `windows-latest` |
 
 ## Installation

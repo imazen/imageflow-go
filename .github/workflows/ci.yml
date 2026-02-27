@@ -35,7 +35,7 @@ jobs:
             asset: imageflow-v2.3.0-rc01-2d210905-osx-arm64.tar.gz
 
           - name: macOS-x86_64
-            runner: macos-13
+            runner: macos-15-intel
             asset: imageflow-v2.3.0-rc01-2d210905-osx-x86_64.tar.gz
 
           - name: windows-x86_64
