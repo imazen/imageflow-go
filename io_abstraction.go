@@ -45,6 +45,11 @@ func (file URL) toBuffer() ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
+// added to expose private method
+func (file URL) ToBuffer() ([]byte, error) {
+	return file.toBuffer()
+}
+
 func (file URL) toOutput(data []byte, m map[string][]byte) (map[string][]byte, error) {
 	return m, nil
 }

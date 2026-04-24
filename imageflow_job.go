@@ -100,6 +100,12 @@ func newJob() (*job, error) {
 	return &job{inner: v}, nil
 }
 
+// NewJob is exported for external use
+func NewJob() *job {
+	j, _ := newJob()
+	return j
+}
+
 // CleanUp frees the context.
 func (j *job) CleanUp() {
 	if j.inner != nil {
