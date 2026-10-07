@@ -9,7 +9,7 @@ Licensed under AGPLv3. Commercial licenses available on a sliding scale — if y
 
 ## Platform support
 
-Tested in CI against libimageflow v2.3.0-rc01:
+Tested in CI against libimageflow v2.3.1-rc01:
 
 | Platform | Library | Runner |
 |---|---|---|
@@ -23,7 +23,7 @@ Tested in CI against libimageflow v2.3.0-rc01:
 
 ## Installation
 
-1. Download the appropriate libimageflow binary for your platform from the [v2.3.0-rc01 release](https://github.com/imazen/imageflow/releases/tag/v2.3.0-rc01).
+1. Download the appropriate libimageflow binary for your platform from the [v2.3.1-rc01 release](https://github.com/imazen/imageflow/releases/tag/v2.3.1-rc01).
 
 2. Place the library where your linker and loader can find it (e.g. `/usr/local/lib`, or the working directory with `LD_LIBRARY_PATH=.`).
 
